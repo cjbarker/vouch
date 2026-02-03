@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-grid">
+    <!-- Upload Section -->
+    <section class="upload-section">
+        <h2>Upload Receipt</h2>
+
+        <div id="upload-zone" class="upload-zone">
+            <form id="upload-form" enctype="multipart/form-data">
+                <div class="drop-area" id="drop-area">
+                    <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <p>Drag & drop your receipt here</p>
+                    <p class="text-small">or</p>
+                    <label for="file-input" class="file-label">Browse Files</label>
+                    <input type="file" id="file-input" name="file" accept=".jpg,.jpeg,.png,.pdf" hidden>
+                    <p class="text-small">JPG, PNG, or PDF (max 5MB)</p>
+                </div>
+            </form>
+
+            <div id="upload-progress" class="upload-progress hidden">
+                <div class="spinner"></div>
+                <p id="progress-text">Analyzing receipt...</p>
+            </div>
+
+            <div id="upload-result" class="upload-result hidden"></div>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <section class="search-section">
+        <h2>Search Receipts</h2>
+
+        <div class="search-container">
+            <div class="search-bar">
+                <input
+                    type="text"
+                    id="search-input"
+                    name="q"
+                    placeholder="Search by store, product, UPC, or transaction ID..."
+                    hx-get="/api/search"
+                    hx-trigger="keyup changed delay:500ms, search"
+                    hx-target="#search-results"
+                    hx-include="[name='store'], [name='date_from'], [name='date_to'], [name='min_price'], [name='max_price']"
+                >
+                <button class="search-btn" onclick="document.getElementById('search-input').dispatchEvent(new Event('search'))">
+                    Search
+                </button>
+            </div>
+
+            <details class="filters">
+                <summary>Advanced Filters</summary>
+                <div class="filter-grid">
+                    <div class="filter-item">
+                        <label for="store-filter">Store Name</label>
+                        <input type="text" id="store-filter" name="store" placeholder="e.g. Home Depot">
+                    </div>
+
+                    <div class="filter-item">
+                        <label for="date-from">Date From</label>
+                        <input type="date" id="date-from" name="date_from">
+                    </div>
+
+                    <div class="filter-item">
+                        <label for="date-to">Date To</label>
+                        <input type="date" id="date-to" name="date_to">
+                    </div>
+
+                    <div class="filter-item">
+                        <label for="min-price">Min Price ($)</label>
+                        <input type="number" id="min-price" name="min_price" min="0" step="0.01" placeholder="0.00">
+                    </div>
+
+                    <div class="filter-item">
+                        <label for="max-price">Max Price ($)</label>
+                        <input type="number" id="max-price" name="max_price" min="0" step="0.01" placeholder="999.99">
+                    </div>
+                </div>
+
+                <button class="filter-apply" onclick="document.getElementById('search-input').dispatchEvent(new Event('search'))">
+                    Apply Filters
+                </button>
+            </details>
+        </div>
+
+        <div id="search-results" class="search-results">
+            <div class="empty-state">
+                <p>Search for receipts or upload a new one to get started</p>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Initialize HTMX response transformer
+htmx.config.responseHandling = [
+    {code: "200", swap: true},
+    {code: ".*", swap: false}
+];
+
+// Custom HTMX response handler for search results
+document.body.addEventListener('htmx:afterRequest', function(evt) {
+    if (evt.detail.target.id === 'search-results' && evt.detail.successful) {
+        const response = JSON.parse(evt.detail.xhr.response);
+        renderSearchResults(response);
+    }
+});
+
+function renderSearchResults(data) {
+    const container = document.getElementById('search-results');
+
+    if (data.total === 0) {
+        container.innerHTML = '<div class="empty-state"><p>No receipts found</p></div>';
+        return;
+    }
+
+    let html = `<div class="results-header"><p>Found ${data.total} receipt(s)</p></div>`;
+    html += '<div class="receipt-grid">';
+
+    data.results.forEach(result => {
+        html += renderReceiptCard(result);
+    });
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function renderReceiptCard(result) {
+    const receipt = result.receipt;
+    const trans = receipt.transaction_info;
+    const totals = receipt.totals;
+
+    return `
+        <div class="receipt-card">
+            <div class="receipt-header">
+                <h3>${trans.store_name}</h3>
+                <span class="receipt-score">Score: ${result.score.toFixed(2)}</span>
+            </div>
+            <div class="receipt-body">
+                <p><strong>Date:</strong> ${trans.date_purchased} ${trans.time_purchased}</p>
+                <p><strong>Transaction:</strong> ${trans.transaction_id}</p>
+                <p><strong>Total:</strong> $${totals.grand_total.toFixed(2)}</p>
+                <p><strong>Items:</strong> ${receipt.items.length}</p>
+                ${receipt.items.some(item => item.warranty_details) ?
+                    '<span class="warranty-badge">Has Warranty Items</span>' : ''}
+            </div>
+            <div class="receipt-footer">
+                <button class="view-details-btn" onclick="viewReceipt('${result.receipt_id}')">
+                    View Details
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function viewReceipt(receiptId) {
+    fetch(`/api/receipts/${receiptId}`)
+        .then(response => response.json())
+        .then(receipt => {
+            showReceiptModal(receiptId, receipt);
+        })
+        .catch(error => {
+            console.error('Error fetching receipt:', error);
+            alert('Failed to load receipt details');
+        });
+}
+
+function showReceiptModal(receiptId, receipt) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>${receipt.transaction_info.store_name}</h2>
+                <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <section>
+                    <h3>Transaction Information</h3>
+                    <div class="info-grid">
+                        <p><strong>Store:</strong> ${receipt.transaction_info.store_name}</p>
+                        <p><strong>Address:</strong> ${receipt.transaction_info.store_address}</p>
+                        <p><strong>Phone:</strong> ${receipt.transaction_info.store_phone}</p>
+                        <p><strong>Date:</strong> ${receipt.transaction_info.date_purchased}</p>
+                        <p><strong>Time:</strong> ${receipt.transaction_info.time_purchased}</p>
+                        <p><strong>Cashier:</strong> ${receipt.transaction_info.cashier}</p>
+                        <p><strong>Transaction ID:</strong> ${receipt.transaction_info.transaction_id}</p>
+                    </div>
+                </section>
+
+                <section>
+                    <h3>Items</h3>
+                    <table class="items-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>UPC</th>
+                                <th>Qty</th>
+                                <th>Unit Price</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${receipt.items.map(item => `
+                                <tr class="${item.warranty_details ? 'has-warranty' : ''}">
+                                    <td>
+                                        ${item.product_name}
+                                        ${item.warranty_details ? '<br><span class="warranty-badge">Warranty Available</span>' : ''}
+                                    </td>
+                                    <td>${item.upc}</td>
+                                    <td>${item.quantity}</td>
+                                    <td>$${item.unit_price.toFixed(2)}</td>
+                                    <td>$${item.total_price.toFixed(2)}</td>
+                                </tr>
+                                ${item.warranty_details ? `
+                                    <tr class="warranty-details">
+                                        <td colspan="5">
+                                            <strong>Warranty:</strong> ${item.warranty_details.coverage}<br>
+                                            <strong>Requirements:</strong> ${item.warranty_details.requirements}<br>
+                                            <strong>Source:</strong> <a href="${item.warranty_details.source_url}" target="_blank">${item.warranty_details.source_url}</a>
+                                        </td>
+                                    </tr>
+                                ` : ''}
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </section>
+
+                <section>
+                    <h3>Totals</h3>
+                    <div class="totals-grid">
+                        <p><strong>Subtotal:</strong> $${receipt.totals.subtotal.toFixed(2)}</p>
+                        <p><strong>Sales Tax:</strong> $${receipt.totals.sales_tax.toFixed(2)}</p>
+                        <p class="grand-total"><strong>Grand Total:</strong> $${receipt.totals.grand_total.toFixed(2)}</p>
+                    </div>
+                </section>
+
+                <section>
+                    <h3>Payment Information</h3>
+                    <div class="info-grid">
+                        <p><strong>Card Type:</strong> ${receipt.payment_info.card_type}</p>
+                        <p><strong>Last Four:</strong> ${receipt.payment_info.card_last_four}</p>
+                        <p><strong>Auth Code:</strong> ${receipt.payment_info.auth_code}</p>
+                    </div>
+                </section>
+
+                <section>
+                    <h3>Return Policy</h3>
+                    <div class="info-grid">
+                        <p><strong>Policy ID:</strong> ${receipt.return_policy.policy_id}</p>
+                        <p><strong>Return Window:</strong> ${receipt.return_policy.return_window_days} days</p>
+                        <p><strong>Expires:</strong> ${receipt.return_policy.policy_expiration_date}</p>
+                        <p><strong>Notes:</strong> ${receipt.return_policy.notes}</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    // Close on background click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+}
+</script>
+{% endblock %}
