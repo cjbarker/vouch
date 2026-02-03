@@ -1,0 +1,192 @@
+Breakdown this receipt image including a list of all the product names purchased, date purchased, and universal product code (UPC).
+
+The output should included transaction details, purchased items, financial summary, and optionally if available the return policy.
+
+Lastly, if the individual item's purchase price is equal or greater than $100 USD look-up the item's warranty details including a URL link to the sourced warranty information and include it in the JSON output.
+
+Below is the JSON schema that the output results should adhere to.
+
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "",
+  "type": "object",
+  "properties": {
+    "transaction_info": {
+      "type": "object",
+      "properties": {
+        "store_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "store_address": {
+          "type": "string",
+          "minLength": 1
+        },
+        "store_phone": {
+          "type": "string",
+          "minLength": 1
+        },
+        "date_purchased": {
+          "type": "string",
+          "minLength": 1
+        },
+        "time_purchased": {
+          "type": "string",
+          "minLength": 1
+        },
+        "cashier": {
+          "type": "string",
+          "minLength": 1
+        },
+        "transaction_id": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "store_name",
+        "store_address",
+        "store_phone",
+        "date_purchased",
+        "time_purchased",
+        "cashier",
+        "transaction_id"
+      ]
+    },
+    "items": {
+      "type": "array",
+      "uniqueItems": true,
+      "minItems": 1,
+      "items": {
+        "required": [
+          "upc",
+          "product_name",
+          "quantity",
+          "unit_price",
+          "total_price",
+          "serial_number"
+        ],
+        "properties": {
+          "upc": {
+            "type": "string",
+            "minLength": 1
+          },
+          "product_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unit_price": {
+            "type": "number"
+          },
+          "total_price": {
+            "type": "number"
+          },
+          "serial_number": {
+            "type": "string",
+            "minLength": 1
+          },
+          "warranty_details": {
+            "type": "object",
+            "properties": {
+              "coverage": {
+                "type": "string",
+                "minLength": 1
+              },
+              "requirements": {
+                "type": "string",
+                "minLength": 1
+              },
+              "source_url": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "coverage",
+              "requirements",
+              "source_url"
+            ]
+          }
+        }
+      }
+    },
+    "totals": {
+      "type": "object",
+      "properties": {
+        "subtotal": {
+          "type": "number"
+        },
+        "sales_tax": {
+          "type": "number"
+        },
+        "grand_total": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "subtotal",
+        "sales_tax",
+        "grand_total"
+      ]
+    },
+    "payment_info": {
+      "type": "object",
+      "properties": {
+        "card_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "card_last_four": {
+          "type": "string",
+          "minLength": 1
+        },
+        "auth_code": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "card_type",
+        "card_last_four",
+        "auth_code"
+      ]
+    },
+    "return_policy": {
+      "type": "object",
+      "properties": {
+        "policy_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "return_window_days": {
+          "type": "number"
+        },
+        "policy_expiration_date": {
+          "type": "string",
+          "minLength": 1
+        },
+        "notes": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "policy_id",
+        "return_window_days",
+        "policy_expiration_date",
+        "notes"
+      ]
+    }
+  },
+  "required": [
+    "transaction_info",
+    "items",
+    "totals",
+    "payment_info",
+    "return_policy"
+  ]
+}
+
