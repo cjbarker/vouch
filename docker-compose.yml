@@ -1,0 +1,162 @@
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: vouch-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_DATABASE: vouch
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - vouch-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # Elasticsearch Search Engine
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+    container_name: vouch-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - bootstrap.memory_lock=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - vouch-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Ollama AI Model Service
+  ollama:
+    image: ollama/ollama:latest
+    container_name: vouch-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - vouch-network
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # Ollama Model Puller (initialization service)
+  ollama-init:
+    image: ollama/ollama:latest
+    container_name: vouch-ollama-init
+    networks:
+      - vouch-network
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: /bin/bash
+    command: >
+      -c "
+      echo 'Waiting for Ollama service to be ready...';
+      sleep 5;
+      echo 'Pulling llama3.2-vision model... This may take several minutes.';
+      ollama pull llama3.2-vision;
+      echo 'Model pulled successfully!';
+      "
+    environment:
+      - OLLAMA_HOST=ollama:11434
+    restart: "no"
+
+  # Vouch Application
+  vouch:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vouch-app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      # MongoDB Configuration
+      - MONGODB_URL=mongodb://mongodb:27017
+      - MONGODB_DB_NAME=vouch
+
+      # Elasticsearch Configuration
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+
+      # Ollama Configuration
+      - OLLAMA_API_URL=http://ollama:11434
+      - OLLAMA_MODEL=llama3.2-vision
+
+      # File Upload Configuration
+      - MAX_UPLOAD_SIZE=5242880
+      - UPLOAD_DIR=/app/uploads
+      - ALLOWED_EXTENSIONS=jpg,jpeg,png,pdf
+
+      # Application Configuration
+      - APP_HOST=0.0.0.0
+      - APP_PORT=8000
+    volumes:
+      - uploads_data:/app/uploads
+      # Mount prompt and schema files
+      - ./prompt.txt:/app/prompt.txt:ro
+      - ./receipt-breakdown-schema.json:/app/receipt-breakdown-schema.json:ro
+    networks:
+      - vouch-network
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+      ollama-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+# Networks
+networks:
+  vouch-network:
+    driver: bridge
+    name: vouch-network
+
+# Volumes
+volumes:
+  mongodb_data:
+    name: vouch-mongodb-data
+  mongodb_config:
+    name: vouch-mongodb-config
+  elasticsearch_data:
+    name: vouch-elasticsearch-data
+  ollama_data:
+    name: vouch-ollama-data
+  uploads_data:
+    name: vouch-uploads-data

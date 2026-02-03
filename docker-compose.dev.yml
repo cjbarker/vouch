@@ -1,0 +1,21 @@
+version: '3.8'
+
+# Development override for docker-compose.yml
+# Use with: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+services:
+  vouch:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder  # Use builder stage for development dependencies
+    volumes:
+      # Mount source code for hot reloading
+      - ./app:/app/app:ro
+      - ./prompt.txt:/app/prompt.txt:ro
+      - ./receipt-breakdown-schema.json:/app/receipt-breakdown-schema.json:ro
+      - uploads_data:/app/uploads
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=DEBUG
