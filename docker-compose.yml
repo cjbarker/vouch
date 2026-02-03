@@ -82,8 +82,8 @@ services:
       -c "
       echo 'Waiting for Ollama service to be ready...';
       sleep 5;
-      echo 'Pulling llama3.2-vision model... This may take several minutes.';
-      ollama pull llama3.2-vision;
+      echo 'Pulling llava model... This may take several minutes.';
+      ollama pull llava;
       echo 'Model pulled successfully!';
       "
     environment:
@@ -109,7 +109,7 @@ services:
 
       # Ollama Configuration
       - OLLAMA_API_URL=http://ollama:11434
-      - OLLAMA_MODEL=llama3.2-vision
+      - OLLAMA_MODEL=llava
 
       # File Upload Configuration
       - MAX_UPLOAD_SIZE=5242880
