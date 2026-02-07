@@ -1,0 +1,30 @@
+[bandit]
+# Bandit configuration for Vouch project
+# Security vulnerability scanning for Python code
+
+# Exclude paths (directories to skip)
+exclude_dirs =
+    /tests,
+    /.venv,
+    /venv,
+    /.venv.backup,
+    /build,
+    /dist,
+    /.pytest_cache,
+    /htmlcov,
+    /uploads,
+    /__pycache__
+
+# Skip certain tests (if needed)
+# skips = B101,B601
+
+# Test IDs to run (leave empty to run all)
+# tests = B201,B301
+
+# Severity level to report (LOW, MEDIUM, HIGH)
+# Default is to show all levels
+# level = MEDIUM
+
+# Confidence level to report (LOW, MEDIUM, HIGH)
+# Default is to show all levels
+# confidence = MEDIUM
