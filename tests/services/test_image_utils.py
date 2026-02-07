@@ -40,9 +40,7 @@ class TestImageToBase64:
 class TestPdfToImageBase64:
     """Tests for pdf_to_image_base64 function."""
 
-    @pytest.mark.skipif(
-        True, reason="Requires pdf2image and poppler, skipping in basic tests"
-    )
+    @pytest.mark.skipif(True, reason="Requires pdf2image and poppler, skipping in basic tests")
     def test_convert_pdf_to_base64(self, sample_pdf_path):
         """Test converting PDF to base64 image."""
         # This would require a real PDF and pdf2image installed

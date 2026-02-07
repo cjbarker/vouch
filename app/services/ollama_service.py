@@ -7,11 +7,7 @@ from typing import Dict
 import httpx
 
 from app.config import settings
-from app.services.base_llm_service import (
-    BaseLLMService,
-    LLMAPIError,
-    LLMAuthenticationError,
-)
+from app.services.base_llm_service import BaseLLMService, LLMAPIError, LLMAuthenticationError
 from app.services.image_utils import image_to_base64, pdf_to_image_base64
 
 
@@ -60,9 +56,7 @@ class OllamaService(BaseLLMService):
         # Call Ollama API
         try:
             async with httpx.AsyncClient(timeout=300.0) as client:
-                response = await client.post(
-                    f"{self.api_url}/api/generate", json=payload
-                )
+                response = await client.post(f"{self.api_url}/api/generate", json=payload)
                 response.raise_for_status()
 
                 result = response.json()

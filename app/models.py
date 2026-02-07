@@ -9,15 +9,9 @@ from pydantic import BaseModel, Field
 class WarrantyDetails(BaseModel):
     """Warranty information for high-value items."""
 
-    coverage: str = Field(
-        ..., min_length=1, description="Description of warranty coverage"
-    )
-    requirements: str = Field(
-        ..., min_length=1, description="Requirements to maintain warranty"
-    )
-    source_url: str = Field(
-        ..., min_length=1, description="URL to warranty information"
-    )
+    coverage: str = Field(..., min_length=1, description="Description of warranty coverage")
+    requirements: str = Field(..., min_length=1, description="Requirements to maintain warranty")
+    source_url: str = Field(..., min_length=1, description="URL to warranty information")
 
 
 class Item(BaseModel):
@@ -43,9 +37,7 @@ class TransactionInfo(BaseModel):
     date_purchased: str = Field(..., min_length=1, description="Date of purchase")
     time_purchased: str = Field(..., min_length=1, description="Time of purchase")
     cashier: str = Field(..., min_length=1, description="Cashier name or ID")
-    transaction_id: str = Field(
-        ..., min_length=1, description="Unique transaction identifier"
-    )
+    transaction_id: str = Field(..., min_length=1, description="Unique transaction identifier")
 
 
 class Totals(BaseModel):
@@ -60,9 +52,7 @@ class PaymentInfo(BaseModel):
     """Payment information."""
 
     card_type: str = Field(..., min_length=1, description="Type of card used")
-    card_last_four: str = Field(
-        ..., min_length=1, description="Last four digits of card"
-    )
+    card_last_four: str = Field(..., min_length=1, description="Last four digits of card")
     auth_code: str = Field(..., min_length=1, description="Authorization code")
 
 
@@ -70,12 +60,8 @@ class ReturnPolicy(BaseModel):
     """Return policy details."""
 
     policy_id: str = Field(..., min_length=1, description="Policy identifier")
-    return_window_days: float = Field(
-        ..., gt=0, description="Number of days for returns"
-    )
-    policy_expiration_date: str = Field(
-        ..., min_length=1, description="Policy expiration date"
-    )
+    return_window_days: float = Field(..., gt=0, description="Number of days for returns")
+    policy_expiration_date: str = Field(..., min_length=1, description="Policy expiration date")
     notes: str = Field(..., min_length=1, description="Additional policy notes")
 
 

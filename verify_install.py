@@ -49,7 +49,7 @@ def check_packages():
         try:
             import_module(package_name)
             print(f"✓ {display_name}")
-        except ImportError as e:
+        except ImportError:
             print(f"✗ {display_name} - NOT FOUND")
             all_good = False
 
@@ -60,20 +60,25 @@ def check_app_imports():
     """Check if app modules can be imported."""
     print("\nChecking application modules:")
     try:
-        from app.config import settings
-        print(f"✓ app.config - Settings loaded")
+        from app.config import settings  # noqa: F401
 
-        from app.models import Receipt
-        print(f"✓ app.models - Models loaded")
+        print("✓ app.config - Settings loaded")
 
-        from app.services.ollama_service import OllamaService
-        print(f"✓ app.services.ollama_service - Service loaded")
+        from app.models import Receipt  # noqa: F401
 
-        from app.services.mongodb_service import MongoDBService
-        print(f"✓ app.services.mongodb_service - Service loaded")
+        print("✓ app.models - Models loaded")
 
-        from app.services.elasticsearch_service import ElasticsearchService
-        print(f"✓ app.services.elasticsearch_service - Service loaded")
+        from app.services.ollama_service import OllamaService  # noqa: F401
+
+        print("✓ app.services.ollama_service - Service loaded")
+
+        from app.services.mongodb_service import MongoDBService  # noqa: F401
+
+        print("✓ app.services.mongodb_service - Service loaded")
+
+        from app.services.elasticsearch_service import ElasticsearchService  # noqa: F401
+
+        print("✓ app.services.elasticsearch_service - Service loaded")
 
         return True
     except Exception as e:

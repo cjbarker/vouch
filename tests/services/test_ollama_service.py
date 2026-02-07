@@ -54,9 +54,7 @@ class TestOllamaService:
             await ollama_service.analyze_receipt(unsupported_file)
 
     @pytest.mark.asyncio
-    async def test_analyze_receipt_empty_response(
-        self, ollama_service, sample_image_path
-    ):
+    async def test_analyze_receipt_empty_response(self, ollama_service, sample_image_path):
         """Test handling empty response from Ollama."""
         mock_response = AsyncMock()
         mock_response.status_code = 200

@@ -47,9 +47,7 @@ class TestGeminiService:
     @pytest.mark.asyncio
     async def test_analyze_receipt_auth_error(self, gemini_service, sample_image_path):
         """Test handling authentication error."""
-        gemini_service.client.models.generate_content.side_effect = Exception(
-            "API key invalid"
-        )
+        gemini_service.client.models.generate_content.side_effect = Exception("API key invalid")
 
         with pytest.raises(LLMAuthenticationError):
             await gemini_service.analyze_receipt(sample_image_path)

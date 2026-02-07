@@ -41,9 +41,7 @@ class TestOpenAIService:
         mock_choice.message = mock_message
         mock_response.choices = [mock_choice]
 
-        openai_service.client.chat.completions.create = AsyncMock(
-            return_value=mock_response
-        )
+        openai_service.client.chat.completions.create = AsyncMock(return_value=mock_response)
 
         result = await openai_service.analyze_receipt(sample_image_path)
         assert "transaction_info" in result

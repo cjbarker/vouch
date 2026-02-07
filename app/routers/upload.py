@@ -22,9 +22,7 @@ elasticsearch_service: Optional[ElasticsearchService] = None
 llm_service: Optional[BaseLLMService] = None
 
 
-def set_services(
-    mongo: MongoDBService, elastic: ElasticsearchService, llm: BaseLLMService
-):
+def set_services(mongo: MongoDBService, elastic: ElasticsearchService, llm: BaseLLMService):
     """Set service instances."""
     global mongodb_service, elasticsearch_service, llm_service
     mongodb_service = mongo
@@ -62,8 +60,7 @@ async def upload_receipt(file: UploadFile = File(...)):
 
         # Save to temporary file
         temp_file_path = (
-            settings.upload_dir
-            / f"{Path(file.filename).stem}_{hash(content)}.{file_extension}"
+            settings.upload_dir / f"{Path(file.filename).stem}_{hash(content)}.{file_extension}"
         )
 
         try:
@@ -107,6 +104,4 @@ async def upload_receipt(file: UploadFile = File(...)):
         raise
     except Exception as e:
         logger.error(f"Upload failed: {e}", exc_info=True)
-        return UploadResponse(
-            success=False, message="Failed to process receipt", error=str(e)
-        )
+        return UploadResponse(success=False, message="Failed to process receipt", error=str(e))

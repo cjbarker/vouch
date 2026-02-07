@@ -189,4 +189,3 @@ Below is the JSON schema that the output results should adhere to.
     "return_policy"
   ]
 }
-

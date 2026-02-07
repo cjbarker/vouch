@@ -53,17 +53,12 @@ class TestSearchRouter:
         data = response.json()
         assert data["total"] == 1
         assert len(data["results"]) == 1
-        assert (
-            data["results"][0]["receipt"]["transaction_info"]["store_name"]
-            == "Test Store"
-        )
+        assert data["results"][0]["receipt"]["transaction_info"]["store_name"] == "Test Store"
 
     @pytest.mark.integration
     def test_search_with_filters(self, test_client, mock_services):
         """Test search with filters."""
-        response = test_client.get(
-            "/api/search?q=Store&store_name=Test&min_price=10&max_price=100"
-        )
+        response = test_client.get("/api/search?q=Store&store_name=Test&min_price=10&max_price=100")
 
         assert response.status_code == 200
         mock_services["elastic"].search_receipts.assert_called_once()

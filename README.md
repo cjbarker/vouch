@@ -630,15 +630,77 @@ flake8 app/
 flake8 app/ --statistics
 ```
 
+### Security Scanning with Bandit
+```bash
+# Scan for security vulnerabilities
+bandit -r app/
+
+# Scan with verbose output
+bandit -r app/ -v
+
+# Generate detailed report
+bandit -r app/ -f json -o bandit-report.json
+
+# Scan specific severity level (LOW, MEDIUM, HIGH)
+bandit -r app/ -ll
+
+# Scan specific confidence level
+bandit -r app/ -iii
+```
+
 ### Type Checking
 ```bash
 mypy app/
 ```
 
-### Pre-commit Checks
+### Automated Pre-commit Hooks
+
+This project uses [pre-commit](https://pre-commit.com/) to automatically run quality checks before each commit.
+
+#### Installation
+
+```bash
+# Install pre-commit (included in requirements.txt)
+pip install pre-commit
+
+# Install the git hook scripts
+pre-commit install
+```
+
+#### Usage
+
+Once installed, pre-commit will automatically run on every `git commit`. The hooks will:
+- Sort imports with isort
+- Format code with Black
+- Lint code with flake8
+- Scan for security issues with Bandit
+- Check for common issues (trailing whitespace, large files, etc.)
+
+```bash
+# Manually run on all files
+pre-commit run --all-files
+
+# Run on specific files
+pre-commit run --files app/main.py
+
+# Skip hooks for a commit (not recommended)
+git commit --no-verify
+
+# Update hooks to latest versions
+pre-commit autoupdate
+```
+
+#### Configuration
+
+Edit `.pre-commit-config.yaml` to customize hooks. To enable pytest on every commit, uncomment the pytest hook section.
+
+### Manual Pre-commit Checks
+
+If you prefer to run checks manually instead of using pre-commit hooks:
+
 ```bash
 # Run all quality checks before committing
-isort app/ tests/ --check-only && black app/ tests/ --check && flake8 app/ tests/ && pytest
+isort app/ tests/ --check-only && black app/ tests/ --check && flake8 app/ tests/ && bandit -r app/ -ll && pytest
 ```
 
 ## License

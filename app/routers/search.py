@@ -89,9 +89,7 @@ async def search_receipts(
                 )
             )
 
-        return SearchResponse(
-            total=search_results["total"], results=results, query=search_query
-        )
+        return SearchResponse(total=search_results["total"], results=results, query=search_query)
 
     except Exception as e:
         logger.error(f"Search failed: {e}", exc_info=True)
@@ -125,9 +123,7 @@ async def get_receipt(receipt_id: str):
         raise
     except Exception as e:
         logger.error(f"Failed to retrieve receipt: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500, detail=f"Failed to retrieve receipt: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve receipt: {str(e)}")
 
 
 @router.get("/receipts")
@@ -150,9 +146,7 @@ async def list_receipts(
             receipt_id = receipt.pop("_id", None)
             receipt.pop("created_at", None)
             receipt.pop("updated_at", None)
-            cleaned_receipts.append(
-                {"receipt_id": receipt_id, "receipt": Receipt(**receipt)}
-            )
+            cleaned_receipts.append({"receipt_id": receipt_id, "receipt": Receipt(**receipt)})
 
         return {
             "total": total,
@@ -163,6 +157,4 @@ async def list_receipts(
 
     except Exception as e:
         logger.error(f"Failed to list receipts: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500, detail=f"Failed to list receipts: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Failed to list receipts: {str(e)}")

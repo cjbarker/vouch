@@ -104,9 +104,7 @@ async def health_check():
     # Check MongoDB
     try:
         mongodb_healthy = await mongodb_service.health_check()
-        health_status["services"]["mongodb"] = (
-            "healthy" if mongodb_healthy else "unhealthy"
-        )
+        health_status["services"]["mongodb"] = "healthy" if mongodb_healthy else "unhealthy"
     except Exception as e:
         health_status["services"]["mongodb"] = f"error: {str(e)}"
 
@@ -129,9 +127,7 @@ async def health_check():
         health_status["services"]["llm_provider"] = settings.llm_provider.value
 
     # Overall status
-    all_healthy = all(
-        status == "healthy" for status in health_status["services"].values()
-    )
+    all_healthy = all(status == "healthy" for status in health_status["services"].values())
     health_status["status"] = "healthy" if all_healthy else "degraded"
 
     return health_status

@@ -31,9 +31,7 @@ class MongoDBService:
         """Create indexes for efficient querying."""
         await self.collection.create_index("transaction_info.store_name")
         await self.collection.create_index("transaction_info.date_purchased")
-        await self.collection.create_index(
-            "transaction_info.transaction_id", unique=True
-        )
+        await self.collection.create_index("transaction_info.transaction_id", unique=True)
         await self.collection.create_index("items.product_name")
         await self.collection.create_index("items.upc")
         await self.collection.create_index("created_at")

@@ -24,9 +24,7 @@ class OpenAIService(BaseLLMService):
         super().__init__()
 
         if not settings.openai_api_key:
-            raise LLMAuthenticationError(
-                "OPENAI_API_KEY is required for OpenAI provider"
-            )
+            raise LLMAuthenticationError("OPENAI_API_KEY is required for OpenAI provider")
 
         self.client = AsyncOpenAI(api_key=settings.openai_api_key)
         self.model = settings.openai_model
@@ -52,9 +50,7 @@ class OpenAIService(BaseLLMService):
         if file_extension in [".jpg", ".jpeg", ".png"]:
             image_base64 = image_to_base64(image_path)
             # Determine mime type
-            mime_type = (
-                "image/jpeg" if file_extension in [".jpg", ".jpeg"] else "image/png"
-            )
+            mime_type = "image/jpeg" if file_extension in [".jpg", ".jpeg"] else "image/png"
         elif file_extension == ".pdf":
             image_base64 = pdf_to_image_base64(image_path)
             mime_type = "image/png"

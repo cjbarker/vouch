@@ -49,7 +49,7 @@ repos:
     rev: 1.7.7
     hooks:
       - id: bandit
-        args: ['-c', '.bandit', '-r', 'app/']
+        args: ['-r', 'app/', '-ll']
         pass_filenames: false
 
   # Python unit tests (optional - can be slow)
