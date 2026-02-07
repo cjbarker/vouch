@@ -3,6 +3,10 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Miscellanous Files
+requirements.lock
+bkup-prompt.txt
+
 # C extensions
 *.so
 

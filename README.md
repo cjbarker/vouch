@@ -166,6 +166,8 @@ pip install --upgrade pip
 - Or install via package manager:
   ```bash
   # macOS
+  brew tap mongodb/brew
+  brew update
   brew install mongodb-community
 
   # Ubuntu
@@ -569,7 +571,30 @@ For detailed comparison and setup instructions, see [PROVIDER_SETUP_GUIDE.md](PR
 
 ### Running Tests
 ```bash
+# Run all tests
 pytest
+
+# Run with coverage
+pytest --cov
+
+# Run specific test
+pytest tests/test_config.py::TestSettings::test_default_settings
+
+# Run by marker
+pytest -m unit
+
+# Show print statements
+pytest -s
+
+# Stop on first failure
+pytest -x
+
+# Run last failed tests
+pytest --lf
+
+# Show slowest tests
+pytest --durations=10
+
 ```
 
 ### Code Formatting
