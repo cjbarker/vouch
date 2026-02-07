@@ -4,11 +4,7 @@ import pytest
 from unittest.mock import AsyncMock, patch
 
 from app.services.openai_service import OpenAIService
-from app.services.base_llm_service import (
-    LLMAPIError,
-    LLMAuthenticationError,
-    LLMRateLimitError,
-)
+from app.services.base_llm_service import LLMAuthenticationError, LLMRateLimitError
 
 
 class TestOpenAIService:

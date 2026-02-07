@@ -1,7 +1,7 @@
 """Search router for receipt retrieval and search."""
 
 import logging
-from typing import List, Optional
+from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
 

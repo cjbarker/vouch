@@ -2,7 +2,6 @@
 
 import base64
 import pytest
-from pathlib import Path
 from PIL import Image
 
 from app.services.image_utils import image_to_base64, pdf_to_image_base64

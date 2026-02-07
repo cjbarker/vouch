@@ -2,7 +2,6 @@
 
 import pytest
 from unittest.mock import AsyncMock, Mock, patch
-from pathlib import Path
 
 from app.services.ollama_service import OllamaService
 from app.services.base_llm_service import LLMAPIError, LLMAuthenticationError

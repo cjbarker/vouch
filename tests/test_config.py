@@ -1,6 +1,5 @@
 """Tests for application configuration."""
 
-import pytest
 from pathlib import Path
 
 from app.config import LLMProvider, Settings
@@ -84,7 +83,7 @@ class TestSettings:
     def test_upload_dir_creation(self, tmp_path):
         """Test that upload directory is created."""
         upload_dir = tmp_path / "test_uploads"
-        settings = Settings(upload_dir=upload_dir)
+        Settings(upload_dir=upload_dir)
         assert upload_dir.exists()
         assert upload_dir.is_dir()
 

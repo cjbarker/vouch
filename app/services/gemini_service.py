@@ -1,14 +1,12 @@
 """Gemini service for receipt analysis using vision models."""
 
 import base64
-import io
 import json
 from pathlib import Path
 from typing import Dict
 
 from google import genai
 from google.genai import types
-from PIL import Image
 
 from app.config import settings
 from app.services.base_llm_service import (

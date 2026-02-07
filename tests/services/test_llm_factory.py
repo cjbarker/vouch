@@ -1,7 +1,6 @@
 """Tests for LLM factory."""
 
 import pytest
-from unittest.mock import patch
 
 from app.config import LLMProvider
 from app.services.llm_factory import LLMServiceFactory

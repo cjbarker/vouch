@@ -4,7 +4,6 @@ import logging
 from pathlib import Path
 from typing import Optional
 
-import jsonschema
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from pydantic import ValidationError
 

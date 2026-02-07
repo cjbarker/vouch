@@ -1,9 +1,8 @@
 """Pytest configuration and shared fixtures."""
 
-import asyncio
 from pathlib import Path
-from typing import AsyncGenerator, Generator
-from unittest.mock import AsyncMock, MagicMock, Mock, patch
+from typing import Generator
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 from fastapi.testclient import TestClient

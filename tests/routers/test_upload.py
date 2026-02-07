@@ -5,8 +5,6 @@ import pytest
 from unittest.mock import AsyncMock, patch
 from PIL import Image
 
-from fastapi.testclient import TestClient
-
 
 class TestUploadRouter:
     """Tests for upload router."""

@@ -1,6 +1,6 @@
 """Elasticsearch service for receipt search and indexing."""
 
-from typing import Dict, List, Optional
+from typing import Dict, Optional
 
 from elasticsearch import AsyncElasticsearch
 
