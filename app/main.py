@@ -17,8 +17,7 @@ from app.services.llm_factory import LLMServiceFactory
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -74,7 +73,7 @@ app = FastAPI(
     title="Vouch - Receipt Analysis",
     description="Upload and analyze receipts with AI-powered extraction and search",
     version="0.1.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Setup templates
@@ -100,22 +99,23 @@ async def root(request: Request):
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
-    health_status = {
-        "status": "healthy",
-        "services": {}
-    }
+    health_status = {"status": "healthy", "services": {}}
 
     # Check MongoDB
     try:
         mongodb_healthy = await mongodb_service.health_check()
-        health_status["services"]["mongodb"] = "healthy" if mongodb_healthy else "unhealthy"
+        health_status["services"]["mongodb"] = (
+            "healthy" if mongodb_healthy else "unhealthy"
+        )
     except Exception as e:
         health_status["services"]["mongodb"] = f"error: {str(e)}"
 
     # Check Elasticsearch
     try:
         elasticsearch_healthy = await elasticsearch_service.health_check()
-        health_status["services"]["elasticsearch"] = "healthy" if elasticsearch_healthy else "unhealthy"
+        health_status["services"]["elasticsearch"] = (
+            "healthy" if elasticsearch_healthy else "unhealthy"
+        )
     except Exception as e:
         health_status["services"]["elasticsearch"] = f"error: {str(e)}"
 
@@ -130,8 +130,7 @@ async def health_check():
 
     # Overall status
     all_healthy = all(
-        status == "healthy"
-        for status in health_status["services"].values()
+        status == "healthy" for status in health_status["services"].values()
     )
     health_status["status"] = "healthy" if all_healthy else "degraded"
 

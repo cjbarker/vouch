@@ -31,7 +31,9 @@ class MongoDBService:
         """Create indexes for efficient querying."""
         await self.collection.create_index("transaction_info.store_name")
         await self.collection.create_index("transaction_info.date_purchased")
-        await self.collection.create_index("transaction_info.transaction_id", unique=True)
+        await self.collection.create_index(
+            "transaction_info.transaction_id", unique=True
+        )
         await self.collection.create_index("items.product_name")
         await self.collection.create_index("items.upc")
         await self.collection.create_index("created_at")
@@ -55,7 +57,7 @@ class MongoDBService:
         document = {
             **receipt_data,
             "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow()
+            "updated_at": datetime.utcnow(),
         }
 
         result = await self.collection.insert_one(document)
@@ -122,9 +124,7 @@ class MongoDBService:
         Returns:
             List of matching receipt documents
         """
-        query = {
-            "transaction_info.store_name": {"$regex": store_name, "$options": "i"}
-        }
+        query = {"transaction_info.store_name": {"$regex": store_name, "$options": "i"}}
 
         cursor = self.collection.find(query).sort("created_at", -1)
         receipts = []
@@ -136,9 +136,7 @@ class MongoDBService:
         return receipts
 
     async def search_receipts_by_date_range(
-        self,
-        date_from: Optional[str] = None,
-        date_to: Optional[str] = None
+        self, date_from: Optional[str] = None, date_to: Optional[str] = None
     ) -> List[Dict]:
         """
         Search receipts by date range.

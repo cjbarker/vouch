@@ -75,7 +75,7 @@ class BaseLLMService(ABC):
         """
         # Try to find JSON object in the response
         # Look for content between curly braces
-        json_pattern = r'\{[\s\S]*\}'
+        json_pattern = r"\{[\s\S]*\}"
         matches = re.findall(json_pattern, text)
 
         if not matches:

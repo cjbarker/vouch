@@ -52,4 +52,6 @@ def pdf_to_image_base64(pdf_path: Path) -> str:
         return base64_str
     except ImportError:
         # Fallback to simpler method if pdf2image not available
-        raise ImportError("pdf2image is required for PDF processing. Install with: pip install pdf2image")
+        raise ImportError(
+            "pdf2image is required for PDF processing. Install with: pip install pdf2image"
+        )

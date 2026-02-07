@@ -28,7 +28,9 @@ class GeminiService(BaseLLMService):
         super().__init__()
 
         if not settings.gemini_api_key:
-            raise LLMAuthenticationError("GEMINI_API_KEY is required for Gemini provider")
+            raise LLMAuthenticationError(
+                "GEMINI_API_KEY is required for Gemini provider"
+            )
 
         self.client = genai.Client(api_key=settings.gemini_api_key)
         self.model_name = settings.gemini_model
@@ -56,7 +58,9 @@ class GeminiService(BaseLLMService):
                 with open(image_path, "rb") as f:
                     image_bytes = f.read()
                 # Determine mime type
-                mime_type = "image/jpeg" if file_extension in [".jpg", ".jpeg"] else "image/png"
+                mime_type = (
+                    "image/jpeg" if file_extension in [".jpg", ".jpeg"] else "image/png"
+                )
             elif file_extension == ".pdf":
                 # Convert PDF to image first
                 image_base64 = pdf_to_image_base64(image_path)
@@ -75,7 +79,7 @@ class GeminiService(BaseLLMService):
                 config=types.GenerateContentConfig(
                     temperature=self.temperature,
                     response_mime_type="application/json",
-                )
+                ),
             )
 
             # Extract response text
@@ -92,7 +96,9 @@ class GeminiService(BaseLLMService):
                 try:
                     receipt_data = self._extract_json_from_response(response_text)
                 except ValueError:
-                    raise LLMAPIError(f"Failed to parse receipt data: {e}\nResponse: {response_text}")
+                    raise LLMAPIError(
+                        f"Failed to parse receipt data: {e}\nResponse: {response_text}"
+                    )
 
             return receipt_data
 
@@ -101,7 +107,9 @@ class GeminiService(BaseLLMService):
             error_msg = str(e).lower()
             if "auth" in error_msg or "api key" in error_msg or "401" in error_msg:
                 raise LLMAuthenticationError(f"Gemini authentication failed: {e}")
-            elif "rate limit" in error_msg or "quota" in error_msg or "429" in error_msg:
+            elif (
+                "rate limit" in error_msg or "quota" in error_msg or "429" in error_msg
+            ):
                 raise LLMRateLimitError(f"Gemini rate limit exceeded: {e}")
             else:
                 raise LLMAPIError(f"Gemini API error: {e}")

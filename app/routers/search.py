@@ -33,7 +33,7 @@ async def search_receipts(
     min_price: Optional[float] = Query(None, ge=0, description="Minimum price"),
     max_price: Optional[float] = Query(None, ge=0, description="Maximum price"),
     skip: int = Query(0, ge=0, description="Number of results to skip"),
-    limit: int = Query(20, ge=1, le=100, description="Maximum results to return")
+    limit: int = Query(20, ge=1, le=100, description="Maximum results to return"),
 ):
     """
     Search receipts with optional filters.
@@ -51,7 +51,7 @@ async def search_receipts(
             min_price=min_price,
             max_price=max_price,
             skip=skip,
-            limit=limit
+            limit=limit,
         )
 
         # Execute search
@@ -63,7 +63,7 @@ async def search_receipts(
             min_price=min_price,
             max_price=max_price,
             skip=skip,
-            limit=limit
+            limit=limit,
         )
 
         # Format results
@@ -80,17 +80,17 @@ async def search_receipts(
             if "receipt_id" in receipt_data:
                 del receipt_data["receipt_id"]
 
-            results.append(SearchResult(
-                receipt_id=result["receipt_id"],
-                score=result["score"],
-                receipt=Receipt(**receipt_data),
-                highlights=result.get("highlights")
-            ))
+            results.append(
+                SearchResult(
+                    receipt_id=result["receipt_id"],
+                    score=result["score"],
+                    receipt=Receipt(**receipt_data),
+                    highlights=result.get("highlights"),
+                )
+            )
 
         return SearchResponse(
-            total=search_results["total"],
-            results=results,
-            query=search_query
+            total=search_results["total"], results=results, query=search_query
         )
 
     except Exception as e:
@@ -125,13 +125,15 @@ async def get_receipt(receipt_id: str):
         raise
     except Exception as e:
         logger.error(f"Failed to retrieve receipt: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to retrieve receipt: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to retrieve receipt: {str(e)}"
+        )
 
 
 @router.get("/receipts")
 async def list_receipts(
     skip: int = Query(0, ge=0, description="Number of results to skip"),
-    limit: int = Query(20, ge=1, le=100, description="Maximum results to return")
+    limit: int = Query(20, ge=1, le=100, description="Maximum results to return"),
 ):
     """
     List all receipts with pagination.
@@ -148,18 +150,19 @@ async def list_receipts(
             receipt_id = receipt.pop("_id", None)
             receipt.pop("created_at", None)
             receipt.pop("updated_at", None)
-            cleaned_receipts.append({
-                "receipt_id": receipt_id,
-                "receipt": Receipt(**receipt)
-            })
+            cleaned_receipts.append(
+                {"receipt_id": receipt_id, "receipt": Receipt(**receipt)}
+            )
 
         return {
             "total": total,
             "skip": skip,
             "limit": limit,
-            "receipts": cleaned_receipts
+            "receipts": cleaned_receipts,
         }
 
     except Exception as e:
         logger.error(f"Failed to list receipts: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Failed to list receipts: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Failed to list receipts: {str(e)}"
+        )

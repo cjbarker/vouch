@@ -23,7 +23,9 @@ elasticsearch_service: Optional[ElasticsearchService] = None
 llm_service: Optional[BaseLLMService] = None
 
 
-def set_services(mongo: MongoDBService, elastic: ElasticsearchService, llm: BaseLLMService):
+def set_services(
+    mongo: MongoDBService, elastic: ElasticsearchService, llm: BaseLLMService
+):
     """Set service instances."""
     global mongodb_service, elasticsearch_service, llm_service
     mongodb_service = mongo
@@ -45,7 +47,7 @@ async def upload_receipt(file: UploadFile = File(...)):
         if file_extension not in settings.allowed_extensions_list:
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid file type. Allowed: {', '.join(settings.allowed_extensions_list)}"
+                detail=f"Invalid file type. Allowed: {', '.join(settings.allowed_extensions_list)}",
             )
 
         # Read file content
@@ -56,11 +58,14 @@ async def upload_receipt(file: UploadFile = File(...)):
         if file_size > settings.max_upload_size:
             raise HTTPException(
                 status_code=400,
-                detail=f"File too large. Maximum size: {settings.max_upload_size / 1024 / 1024:.1f}MB"
+                detail=f"File too large. Maximum size: {settings.max_upload_size / 1024 / 1024:.1f}MB",
             )
 
         # Save to temporary file
-        temp_file_path = settings.upload_dir / f"{Path(file.filename).stem}_{hash(content)}.{file_extension}"
+        temp_file_path = (
+            settings.upload_dir
+            / f"{Path(file.filename).stem}_{hash(content)}.{file_extension}"
+        )
 
         try:
             with open(temp_file_path, "wb") as f:
@@ -76,8 +81,7 @@ async def upload_receipt(file: UploadFile = File(...)):
             except ValidationError as e:
                 logger.error(f"Receipt validation failed: {e}")
                 raise HTTPException(
-                    status_code=422,
-                    detail=f"Receipt data validation failed: {str(e)}"
+                    status_code=422, detail=f"Receipt data validation failed: {str(e)}"
                 )
 
             # Save to MongoDB
@@ -92,7 +96,7 @@ async def upload_receipt(file: UploadFile = File(...)):
                 success=True,
                 receipt_id=receipt_id,
                 receipt=receipt,
-                message="Receipt analyzed and saved successfully"
+                message="Receipt analyzed and saved successfully",
             )
 
         finally:
@@ -105,7 +109,5 @@ async def upload_receipt(file: UploadFile = File(...)):
     except Exception as e:
         logger.error(f"Upload failed: {e}", exc_info=True)
         return UploadResponse(
-            success=False,
-            message="Failed to process receipt",
-            error=str(e)
+            success=False, message="Failed to process receipt", error=str(e)
         )
