@@ -1,24 +1,73 @@
 # Vouch - Receipt Analysis Application
 
-AI-powered receipt analysis and search application using FastAPI, Ollama vision models, MongoDB, and Elasticsearch.
+AI-powered receipt analysis and search application with support for multiple LLM providers (Ollama, OpenAI, Gemini), built with FastAPI, MongoDB, and Elasticsearch.
 
 ## Features
 
 - **Receipt Upload**: Drag-and-drop interface for JPG, PNG, and PDF files (max 5MB)
-- **AI Analysis**: Automatic extraction of receipt data using Ollama's llama3.2-vision model
+- **Multi-Provider AI**: Choose between Ollama (local), OpenAI, or Google Gemini for receipt analysis
+- **AI Analysis**: Automatic extraction of receipt data using vision models
 - **Smart Storage**: MongoDB for document storage with efficient indexing
 - **Full-Text Search**: Elasticsearch-powered search across stores, products, UPCs, and transactions
 - **Warranty Tracking**: Automatic warranty lookup for items $100+
 - **Modern UI**: Responsive interface with HTMX for dynamic updates
+- **Flexible Deployment**: Run locally with Ollama or use cloud APIs (OpenAI/Gemini)
 
 ## Architecture
 
 - **Backend**: FastAPI (Python 3.11+)
-- **Vision AI**: Ollama with llama3.2-vision
+- **Vision AI**: Multi-provider support
+  - **Ollama** (default) - Local, private, free
+  - **OpenAI** - Cloud-based, GPT-4 Vision
+  - **Google Gemini** - Cloud-based, free tier available
 - **Database**: MongoDB
 - **Search**: Elasticsearch
 - **Frontend**: Jinja2 templates + HTMX
 - **File Processing**: Pillow, PyPDF2, pdf2image
+
+## LLM Providers
+
+Vouch supports three LLM providers for receipt analysis. Choose based on your needs:
+
+### Provider Comparison
+
+| Provider | Cost | Privacy | Setup | API Key | Best For |
+|----------|------|---------|-------|---------|----------|
+| **Ollama** | Free | High (local) | Medium | No | Privacy, self-hosting, development |
+| **OpenAI** | ~$0.01-0.03/receipt | Low (cloud) | Easy | Yes | Production, accuracy, speed |
+| **Gemini** | Free tier + paid | Low (cloud) | Easy | Yes | Cost optimization, free tier |
+
+### Quick Provider Setup
+
+**Using Ollama (Default - No API Key Needed):**
+```bash
+# Install Ollama
+brew install ollama  # macOS
+
+# Pull vision model
+ollama pull llama3.2-vision
+
+# Start Ollama
+ollama serve
+```
+
+**Using OpenAI:**
+```bash
+# Add to .env
+LLM_PROVIDER=openai
+OPENAI_API_KEY=sk-your-key-here
+```
+Get your API key at: https://platform.openai.com/api-keys
+
+**Using Google Gemini:**
+```bash
+# Add to .env
+LLM_PROVIDER=gemini
+GEMINI_API_KEY=your-key-here
+```
+Get your API key at: https://makersuite.google.com/app/apikey
+
+For detailed setup instructions, see [PROVIDER_SETUP_GUIDE.md](PROVIDER_SETUP_GUIDE.md)
 
 ## Quick Start with Docker (Recommended)
 
@@ -44,7 +93,9 @@ make install
 docker-compose up -d
 ```
 
-**Note:** First startup takes 5-15 minutes to download the Ollama model (~4.7GB).
+**Note:**
+- First startup takes 5-15 minutes to download the Ollama model (~4.7GB)
+- Docker setup uses Ollama by default. To use OpenAI or Gemini, add environment variables to docker-compose.yml
 
 ### Monitor Progress
 
@@ -134,13 +185,22 @@ pip install --upgrade pip
   sudo apt-get install elasticsearch
   ```
 
-#### 4. Ollama
+#### 4. LLM Provider (Choose One)
 
+**Option A: Ollama (Default - Local & Free)**
 - Download: https://ollama.ai/download
 - Install the llama3.2-vision model:
   ```bash
   ollama pull llama3.2-vision
   ```
+
+**Option B: OpenAI (Cloud-Based)**
+- Get API key: https://platform.openai.com/api-keys
+- Add to `.env`: `LLM_PROVIDER=openai` and `OPENAI_API_KEY=sk-...`
+
+**Option C: Google Gemini (Cloud-Based)**
+- Get API key: https://makersuite.google.com/app/apikey
+- Add to `.env`: `LLM_PROVIDER=gemini` and `GEMINI_API_KEY=...`
 
 #### 5. poppler-utils (for PDF processing)
 
@@ -193,11 +253,27 @@ sudo apt-get install poppler-utils
 
    Edit `.env` file with your settings:
    ```env
+   # Database & Search
    MONGODB_URL=mongodb://localhost:27017
    MONGODB_DB_NAME=vouch
    ELASTICSEARCH_URL=http://localhost:9200
+
+   # LLM Provider Selection (ollama, openai, or gemini)
+   LLM_PROVIDER=ollama
+
+   # Ollama Configuration (default)
    OLLAMA_API_URL=http://localhost:11434
    OLLAMA_MODEL=llama3.2-vision
+
+   # OpenAI Configuration (optional)
+   # OPENAI_API_KEY=sk-your-key-here
+   # OPENAI_MODEL=gpt-4-vision-preview
+
+   # Gemini Configuration (optional)
+   # GEMINI_API_KEY=your-key-here
+   # GEMINI_MODEL=gemini-1.5-pro-vision
+
+   # File Upload
    MAX_UPLOAD_SIZE=5242880
    UPLOAD_DIR=./uploads
    ALLOWED_EXTENSIONS=jpg,jpeg,png,pdf
@@ -236,8 +312,9 @@ Verify Elasticsearch is running:
 curl http://localhost:9200
 ```
 
-### 3. Start Ollama
+### 3. Start Your LLM Provider
 
+**If using Ollama (default):**
 ```bash
 # Start Ollama service
 ollama serve
@@ -247,6 +324,10 @@ In a new terminal, verify the model is available:
 ```bash
 ollama list
 ```
+
+**If using OpenAI or Gemini:**
+- No service to start! Just ensure your API key is in `.env`
+- Skip this step and proceed to running the application
 
 ### 4. Run the Application
 
@@ -279,7 +360,13 @@ The application will be available at:
 - **API Documentation**: http://localhost:8000/docs
 - **Health Check**: http://localhost:8000/health
 
-**Tip:** Keep separate terminal windows open for MongoDB, Elasticsearch, and Ollama services while the application is running.
+**Tip:** Keep separate terminal windows open for MongoDB, Elasticsearch, and your LLM provider (if using Ollama) while the application is running.
+
+**Verify Your LLM Provider:**
+```bash
+curl http://localhost:8000/health
+```
+The response will show which provider is active under `llm_provider`.
 
 #### Troubleshooting Port Conflicts
 
@@ -350,18 +437,23 @@ curl "http://localhost:8000/api/receipts?skip=0&limit=20"
 vouch/
 ├── app/
 │   ├── __init__.py
-│   ├── main.py                 # FastAPI application entry point
-│   ├── config.py               # Configuration management
-│   ├── models.py               # Pydantic models
+│   ├── main.py                      # FastAPI application entry point
+│   ├── config.py                    # Configuration with multi-provider support
+│   ├── models.py                    # Pydantic models
 │   ├── services/
 │   │   ├── __init__.py
-│   │   ├── ollama_service.py  # Ollama API integration
-│   │   ├── mongodb_service.py # MongoDB operations
+│   │   ├── base_llm_service.py     # Abstract base class for LLM providers
+│   │   ├── llm_factory.py          # Factory pattern for provider selection
+│   │   ├── image_utils.py          # Shared image processing utilities
+│   │   ├── ollama_service.py       # Ollama provider implementation
+│   │   ├── openai_service.py       # OpenAI provider implementation
+│   │   ├── gemini_service.py       # Google Gemini provider implementation
+│   │   ├── mongodb_service.py      # MongoDB operations
 │   │   └── elasticsearch_service.py # Search functionality
 │   ├── routers/
 │   │   ├── __init__.py
-│   │   ├── upload.py          # File upload endpoints
-│   │   └── search.py          # Search endpoints
+│   │   ├── upload.py               # File upload endpoints
+│   │   └── search.py               # Search endpoints
 │   ├── static/
 │   │   ├── css/
 │   │   │   └── styles.css
@@ -371,12 +463,15 @@ vouch/
 │       ├── base.html
 │       ├── index.html
 │       └── components/
-├── uploads/                    # Temporary file storage
-├── prompt.txt                  # LLM prompt template
-├── receipt-breakdown-schema.json # JSON schema
+├── uploads/                         # Temporary file storage
+├── prompt.txt                       # LLM prompt template (shared by all providers)
+├── receipt-breakdown-schema.json    # JSON schema
 ├── requirements.txt
 ├── .env.example
-└── README.md
+├── README.md
+├── PROVIDER_SETUP_GUIDE.md         # Detailed provider setup instructions
+├── IMPLEMENTATION_SUMMARY.md       # Technical implementation details
+└── MIGRATION_GUIDE.md              # Migration guide for existing users
 ```
 
 ## Receipt Schema
@@ -400,10 +495,31 @@ Receipts are analyzed and stored with the following structure:
 - Verify service is running: `curl http://localhost:9200`
 - Check Elasticsearch logs for errors
 
-### Ollama Issues
+### LLM Provider Issues
+
+**Ollama:**
 - Verify Ollama is running: `ollama list`
 - Ensure llama3.2-vision is installed: `ollama pull llama3.2-vision`
 - Check Ollama logs: `ollama serve`
+- Verify URL in `.env` matches Ollama server
+
+**OpenAI:**
+- Verify API key is set in `.env`: `OPENAI_API_KEY=sk-...`
+- Check API key is valid at https://platform.openai.com/api-keys
+- Ensure you have sufficient credits/billing enabled
+- Check for rate limit errors in logs
+
+**Gemini:**
+- Verify API key is set in `.env`: `GEMINI_API_KEY=...`
+- Check API key is valid at https://makersuite.google.com/app/apikey
+- Ensure you haven't exceeded free tier limits
+- Check for rate limit errors in logs
+
+**Check Active Provider:**
+```bash
+curl http://localhost:8000/health
+```
+Look for `llm_provider` field in the response.
 
 ### PDF Processing Issues
 - Install poppler-utils: `brew install poppler` (macOS) or `apt-get install poppler-utils` (Ubuntu)
@@ -413,6 +529,41 @@ If port 8000 is already in use, run on a different port:
 ```bash
 uvicorn app.main:app --reload --port 8080
 ```
+
+### Switching Providers
+To switch LLM providers:
+1. Update `LLM_PROVIDER` in `.env` (ollama, openai, or gemini)
+2. Add the required API key if using OpenAI or Gemini
+3. Restart the application
+4. Verify with health check: `curl http://localhost:8000/health`
+
+## Choosing the Right LLM Provider
+
+### When to Use Ollama
+- ✅ Privacy-sensitive data (receipts stay on your machine)
+- ✅ Development and testing
+- ✅ No ongoing costs
+- ✅ No internet required after model download
+- ⚠️ Slower on CPU (faster with GPU)
+- ⚠️ Requires local setup
+
+### When to Use OpenAI
+- ✅ Production deployments requiring high accuracy
+- ✅ Fast processing needed
+- ✅ No local infrastructure
+- ✅ Most accurate receipt parsing
+- ⚠️ Costs ~$0.01-0.03 per receipt
+- ⚠️ Data sent to cloud
+
+### When to Use Gemini
+- ✅ Cost optimization (free tier: 15 requests/min)
+- ✅ Good balance of speed and accuracy
+- ✅ No local infrastructure
+- ✅ Google AI capabilities
+- ⚠️ Data sent to cloud
+- ⚠️ Rate limits on free tier
+
+For detailed comparison and setup instructions, see [PROVIDER_SETUP_GUIDE.md](PROVIDER_SETUP_GUIDE.md)
 
 ## Development
 
@@ -439,6 +590,17 @@ MIT License
 
 Contributions are welcome! Please open an issue or submit a pull request.
 
+## Documentation
+
+- **[PROVIDER_SETUP_GUIDE.md](PROVIDER_SETUP_GUIDE.md)** - Detailed setup instructions for each LLM provider
+- **[MIGRATION_GUIDE.md](MIGRATION_GUIDE.md)** - Migration guide for existing Ollama users
+- **[IMPLEMENTATION_SUMMARY.md](IMPLEMENTATION_SUMMARY.md)** - Technical implementation details
+
 ## Support
 
 For issues and questions, please open an issue on the GitHub repository.
+
+### Common Issues
+- **LLM shows "unhealthy"**: Check that your chosen provider is running/configured
+- **API key errors**: Verify API key is set correctly in `.env`
+- **Wrong provider active**: Check `LLM_PROVIDER` in `.env` and restart the app
