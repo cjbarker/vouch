@@ -10,9 +10,9 @@ from pydantic import ValidationError
 
 from app.config import settings
 from app.models import Receipt, UploadResponse
+from app.services.base_llm_service import BaseLLMService
 from app.services.elasticsearch_service import ElasticsearchService
 from app.services.mongodb_service import MongoDBService
-from app.services.ollama_service import OllamaService
 
 router = APIRouter(prefix="/api", tags=["upload"])
 logger = logging.getLogger(__name__)
@@ -20,15 +20,15 @@ logger = logging.getLogger(__name__)
 # Service instances (will be injected from main app)
 mongodb_service: Optional[MongoDBService] = None
 elasticsearch_service: Optional[ElasticsearchService] = None
-ollama_service: Optional[OllamaService] = None
+llm_service: Optional[BaseLLMService] = None
 
 
-def set_services(mongo: MongoDBService, elastic: ElasticsearchService, ollama: OllamaService):
+def set_services(mongo: MongoDBService, elastic: ElasticsearchService, llm: BaseLLMService):
     """Set service instances."""
-    global mongodb_service, elasticsearch_service, ollama_service
+    global mongodb_service, elasticsearch_service, llm_service
     mongodb_service = mongo
     elasticsearch_service = elastic
-    ollama_service = ollama
+    llm_service = llm
 
 
 @router.post("/upload", response_model=UploadResponse)
@@ -37,7 +37,7 @@ async def upload_receipt(file: UploadFile = File(...)):
     Upload and analyze receipt image.
 
     Accepts JPG, PNG, and PDF files up to 5MB.
-    Analyzes receipt using Ollama vision model, stores in MongoDB, and indexes in Elasticsearch.
+    Analyzes receipt using configured LLM provider, stores in MongoDB, and indexes in Elasticsearch.
     """
     try:
         # Validate file type
@@ -66,9 +66,9 @@ async def upload_receipt(file: UploadFile = File(...)):
             with open(temp_file_path, "wb") as f:
                 f.write(content)
 
-            # Analyze receipt with Ollama
+            # Analyze receipt with LLM service
             logger.info(f"Analyzing receipt: {file.filename}")
-            receipt_data = await ollama_service.analyze_receipt(temp_file_path)
+            receipt_data = await llm_service.analyze_receipt(temp_file_path)
 
             # Validate against schema
             try:

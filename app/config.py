@@ -1,9 +1,18 @@
 """Application configuration management."""
 
+from enum import Enum
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class LLMProvider(str, Enum):
+    """Supported LLM providers."""
+
+    OLLAMA = "ollama"
+    OPENAI = "openai"
+    GEMINI = "gemini"
 
 
 class Settings(BaseSettings):
@@ -18,9 +27,23 @@ class Settings(BaseSettings):
     # Elasticsearch Configuration
     elasticsearch_url: str = "http://localhost:9200"
 
+    # LLM Provider Selection
+    llm_provider: LLMProvider = LLMProvider.OLLAMA
+
     # Ollama Configuration
     ollama_api_url: str = "http://localhost:11434"
     ollama_model: str = "llama3.2-vision"
+
+    # OpenAI Configuration
+    openai_api_key: Optional[str] = None
+    openai_model: str = "gpt-4-vision-preview"
+    openai_max_tokens: int = 4096
+    openai_temperature: float = 0.0
+
+    # Gemini Configuration
+    gemini_api_key: Optional[str] = None
+    gemini_model: str = "gemini-1.5-pro-vision"
+    gemini_temperature: float = 0.0
 
     # File Upload Configuration
     max_upload_size: int = 5242880  # 5MB in bytes

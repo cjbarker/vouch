@@ -9,10 +9,11 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from app.config import settings
 from app.routers import search, upload
 from app.services.elasticsearch_service import ElasticsearchService
 from app.services.mongodb_service import MongoDBService
-from app.services.ollama_service import OllamaService
+from app.services.llm_factory import LLMServiceFactory
 
 # Configure logging
 logging.basicConfig(
@@ -24,7 +25,7 @@ logger = logging.getLogger(__name__)
 # Initialize services
 mongodb_service = MongoDBService()
 elasticsearch_service = ElasticsearchService()
-ollama_service = OllamaService()
+llm_service = LLMServiceFactory.create()
 
 
 @asynccontextmanager
@@ -50,7 +51,7 @@ async def lifespan(app: FastAPI):
         logger.info("Elasticsearch index ready")
 
         # Set services in routers
-        upload.set_services(mongodb_service, elasticsearch_service, ollama_service)
+        upload.set_services(mongodb_service, elasticsearch_service, llm_service)
         search.set_services(mongodb_service, elasticsearch_service)
 
         logger.info("All services initialized successfully")
@@ -118,12 +119,14 @@ async def health_check():
     except Exception as e:
         health_status["services"]["elasticsearch"] = f"error: {str(e)}"
 
-    # Check Ollama
+    # Check LLM service
     try:
-        ollama_healthy = await ollama_service.health_check()
-        health_status["services"]["ollama"] = "healthy" if ollama_healthy else "unhealthy"
+        llm_healthy = await llm_service.health_check()
+        health_status["services"]["llm"] = "healthy" if llm_healthy else "unhealthy"
+        health_status["services"]["llm_provider"] = settings.llm_provider.value
     except Exception as e:
-        health_status["services"]["ollama"] = f"error: {str(e)}"
+        health_status["services"]["llm"] = f"error: {str(e)}"
+        health_status["services"]["llm_provider"] = settings.llm_provider.value
 
     # Overall status
     all_healthy = all(
