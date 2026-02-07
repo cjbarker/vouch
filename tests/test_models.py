@@ -4,17 +4,17 @@ import pytest
 from pydantic import ValidationError
 
 from app.models import (
-    TransactionInfo,
     Item,
-    WarrantyDetails,
-    Totals,
     PaymentInfo,
-    ReturnPolicy,
     Receipt,
-    UploadResponse,
+    ReturnPolicy,
     SearchQuery,
-    SearchResult,
     SearchResponse,
+    SearchResult,
+    Totals,
+    TransactionInfo,
+    UploadResponse,
+    WarrantyDetails,
 )
 
 

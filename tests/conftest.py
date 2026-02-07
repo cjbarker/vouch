@@ -166,9 +166,7 @@ def mock_elasticsearch_client() -> AsyncMock:
     client.indices.exists.return_value = False
     client.indices.create.return_value = {"acknowledged": True}
     client.index.return_value = {"result": "created"}
-    client.search.return_value = {
-        "hits": {"total": {"value": 0}, "hits": []}
-    }
+    client.search.return_value = {"hits": {"total": {"value": 0}, "hits": []}}
     return client
 
 

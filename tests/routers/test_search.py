@@ -1,7 +1,8 @@
 """Tests for search router."""
 
-import pytest
 from unittest.mock import AsyncMock, patch
+
+import pytest
 
 
 class TestSearchRouter:
@@ -10,22 +11,25 @@ class TestSearchRouter:
     @pytest.fixture
     def mock_services(self, sample_receipt_data):
         """Mock required services."""
-        with patch("app.routers.search.mongodb_service") as mock_mongo, \
-             patch("app.routers.search.elasticsearch_service") as mock_elastic:
+        with patch("app.routers.search.mongodb_service") as mock_mongo, patch(
+            "app.routers.search.elasticsearch_service"
+        ) as mock_elastic:
 
             # Mock search results
-            mock_elastic.search_receipts = AsyncMock(return_value={
-                "hits": {
-                    "total": {"value": 1},
-                    "hits": [
-                        {
-                            "_id": "test_id",
-                            "_score": 1.0,
-                            "_source": sample_receipt_data
-                        }
-                    ]
+            mock_elastic.search_receipts = AsyncMock(
+                return_value={
+                    "hits": {
+                        "total": {"value": 1},
+                        "hits": [
+                            {
+                                "_id": "test_id",
+                                "_score": 1.0,
+                                "_source": sample_receipt_data,
+                            }
+                        ],
+                    }
                 }
-            })
+            )
 
             # Mock get receipt
             receipt_with_id = {"_id": "test_id", **sample_receipt_data}
@@ -49,7 +53,10 @@ class TestSearchRouter:
         data = response.json()
         assert data["total"] == 1
         assert len(data["results"]) == 1
-        assert data["results"][0]["receipt"]["transaction_info"]["store_name"] == "Test Store"
+        assert (
+            data["results"][0]["receipt"]["transaction_info"]["store_name"]
+            == "Test Store"
+        )
 
     @pytest.mark.integration
     def test_search_with_filters(self, test_client, mock_services):

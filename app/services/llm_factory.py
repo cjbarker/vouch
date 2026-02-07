@@ -15,9 +15,9 @@ class LLMServiceFactory:
     def _initialize_providers(cls):
         """Lazy initialization of provider mapping to avoid circular imports."""
         if not cls._providers:
+            from app.services.gemini_service import GeminiService
             from app.services.ollama_service import OllamaService
             from app.services.openai_service import OpenAIService
-            from app.services.gemini_service import GeminiService
 
             cls._providers = {
                 LLMProvider.OLLAMA: OllamaService,

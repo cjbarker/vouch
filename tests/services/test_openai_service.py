@@ -1,10 +1,11 @@
 """Tests for OpenAI service."""
 
-import pytest
 from unittest.mock import AsyncMock, patch
 
-from app.services.openai_service import OpenAIService
+import pytest
+
 from app.services.base_llm_service import LLMAuthenticationError, LLMRateLimitError
+from app.services.openai_service import OpenAIService
 
 
 class TestOpenAIService:

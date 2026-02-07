@@ -3,11 +3,11 @@
 import pytest
 
 from app.config import LLMProvider
+from app.services.base_llm_service import LLMAuthenticationError
+from app.services.gemini_service import GeminiService
 from app.services.llm_factory import LLMServiceFactory
 from app.services.ollama_service import OllamaService
 from app.services.openai_service import OpenAIService
-from app.services.gemini_service import GeminiService
-from app.services.base_llm_service import LLMAuthenticationError
 
 
 class TestLLMServiceFactory:

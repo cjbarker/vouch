@@ -1,6 +1,7 @@
 """Tests for image utility functions."""
 
 import base64
+
 import pytest
 from PIL import Image
 
@@ -51,6 +52,7 @@ class TestPdfToImageBase64:
 
     def test_pdf_conversion_import_error(self, sample_pdf_path, monkeypatch):
         """Test PDF conversion when pdf2image not available."""
+
         # Simulate ImportError
         def mock_import(*args, **kwargs):
             raise ImportError("pdf2image not found")

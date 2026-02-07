@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Dict
 
-from openai import AsyncOpenAI, APIError, AuthenticationError, RateLimitError
+from openai import APIError, AsyncOpenAI, AuthenticationError, RateLimitError
 
 from app.config import settings
 from app.services.base_llm_service import (

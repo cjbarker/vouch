@@ -606,6 +606,18 @@ black app/ tests/
 black app/ tests/ --check
 ```
 
+### Import Sorting with isort
+```bash
+# Sort all imports
+isort app/ tests/
+
+# Check import sorting without changes
+isort app/ tests/ --check-only
+
+# Show diff of what would change
+isort app/ tests/ --diff
+```
+
 ### Linting with Flake8
 ```bash
 # Lint all code
@@ -626,7 +638,7 @@ mypy app/
 ### Pre-commit Checks
 ```bash
 # Run all quality checks before committing
-black app/ tests/ --check && flake8 app/ tests/ && pytest
+isort app/ tests/ --check-only && black app/ tests/ --check && flake8 app/ tests/ && pytest
 ```
 
 ## License

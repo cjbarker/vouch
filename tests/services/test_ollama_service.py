@@ -1,10 +1,11 @@
 """Tests for Ollama service."""
 
-import pytest
 from unittest.mock import AsyncMock, Mock, patch
 
-from app.services.ollama_service import OllamaService
+import pytest
+
 from app.services.base_llm_service import LLMAPIError, LLMAuthenticationError
+from app.services.ollama_service import OllamaService
 
 
 class TestOllamaService:

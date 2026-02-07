@@ -1,10 +1,11 @@
 """Tests for Gemini service."""
 
-import pytest
 from unittest.mock import Mock, patch
 
-from app.services.gemini_service import GeminiService
+import pytest
+
 from app.services.base_llm_service import LLMAuthenticationError
+from app.services.gemini_service import GeminiService
 
 
 class TestGeminiService:

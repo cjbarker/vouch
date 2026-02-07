@@ -12,8 +12,8 @@ from fastapi.templating import Jinja2Templates
 from app.config import settings
 from app.routers import search, upload
 from app.services.elasticsearch_service import ElasticsearchService
-from app.services.mongodb_service import MongoDBService
 from app.services.llm_factory import LLMServiceFactory
+from app.services.mongodb_service import MongoDBService
 
 # Configure logging
 logging.basicConfig(

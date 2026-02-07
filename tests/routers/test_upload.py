@@ -1,8 +1,9 @@
 """Tests for upload router."""
 
 import io
-import pytest
 from unittest.mock import AsyncMock, patch
+
+import pytest
 from PIL import Image
 
 
@@ -12,9 +13,9 @@ class TestUploadRouter:
     @pytest.fixture
     def mock_services(self, sample_receipt_data):
         """Mock all required services."""
-        with patch("app.routers.upload.mongodb_service") as mock_mongo, \
-             patch("app.routers.upload.elasticsearch_service") as mock_elastic, \
-             patch("app.routers.upload.llm_service") as mock_llm:
+        with patch("app.routers.upload.mongodb_service") as mock_mongo, patch(
+            "app.routers.upload.elasticsearch_service"
+        ) as mock_elastic, patch("app.routers.upload.llm_service") as mock_llm:
 
             mock_mongo.save_receipt = AsyncMock(return_value="test_receipt_id")
             mock_elastic.index_receipt = AsyncMock()
@@ -40,8 +41,7 @@ class TestUploadRouter:
         img_data = self.create_test_image()
 
         response = test_client.post(
-            "/api/upload",
-            files={"file": ("receipt.jpg", img_data, "image/jpeg")}
+            "/api/upload", files={"file": ("receipt.jpg", img_data, "image/jpeg")}
         )
 
         assert response.status_code == 200
@@ -54,8 +54,7 @@ class TestUploadRouter:
     def test_upload_invalid_file_type(self, test_client):
         """Test upload with invalid file type."""
         response = test_client.post(
-            "/api/upload",
-            files={"file": ("test.txt", b"test content", "text/plain")}
+            "/api/upload", files={"file": ("test.txt", b"test content", "text/plain")}
         )
 
         assert response.status_code == 400
@@ -68,8 +67,7 @@ class TestUploadRouter:
         large_data = b"x" * (mock_settings.max_upload_size + 1000)
 
         response = test_client.post(
-            "/api/upload",
-            files={"file": ("receipt.jpg", large_data, "image/jpeg")}
+            "/api/upload", files={"file": ("receipt.jpg", large_data, "image/jpeg")}
         )
 
         assert response.status_code == 400
@@ -82,8 +80,7 @@ class TestUploadRouter:
         img_data = self.create_test_image()
 
         response = test_client.post(
-            "/api/upload",
-            files={"file": ("receipt.jpg", img_data, "image/jpeg")}
+            "/api/upload", files={"file": ("receipt.jpg", img_data, "image/jpeg")}
         )
 
         # Should return 200 with success=False
