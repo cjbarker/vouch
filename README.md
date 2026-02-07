@@ -599,12 +599,34 @@ pytest --durations=10
 
 ### Code Formatting
 ```bash
-black app/
+# Format all code
+black app/ tests/
+
+# Check formatting without changes
+black app/ tests/ --check
+```
+
+### Linting with Flake8
+```bash
+# Lint all code
+flake8 app/ tests/
+
+# Lint specific directory
+flake8 app/
+
+# Show statistics
+flake8 app/ --statistics
 ```
 
 ### Type Checking
 ```bash
 mypy app/
+```
+
+### Pre-commit Checks
+```bash
+# Run all quality checks before committing
+black app/ tests/ --check && flake8 app/ tests/ && pytest
 ```
 
 ## License
