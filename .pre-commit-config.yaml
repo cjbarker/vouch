@@ -9,8 +9,10 @@ repos:
     hooks:
       - id: trailing-whitespace
         exclude: '\.md$'
-      - id: end-of-file-fixer
       - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-docstring-first
       - id: check-added-large-files
         args: ['--maxkb=1000']
       - id: check-json
