@@ -28,7 +28,8 @@ repos:
     hooks:
       - id: isort
         name: isort (python)
-        args: ['--profile', 'black', '--line-length', '100']
+        args: ['--config-root', '.', '--resolve-all-configs']
+          #args: ['--profile', 'black', '--filter-files', '--line-length', '100']
 
   # Python code formatting (runs after import sorting)
   - repo: https://github.com/psf/black
