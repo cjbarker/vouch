@@ -13,9 +13,11 @@ class TestUploadRouter:
     @pytest.fixture
     def mock_services(self, sample_receipt_data):
         """Mock all required services."""
-        with patch("app.routers.upload.mongodb_service") as mock_mongo, patch(
-            "app.routers.upload.elasticsearch_service"
-        ) as mock_elastic, patch("app.routers.upload.llm_service") as mock_llm:
+        with (
+            patch("app.routers.upload.mongodb_service") as mock_mongo,
+            patch("app.routers.upload.elasticsearch_service") as mock_elastic,
+            patch("app.routers.upload.llm_service") as mock_llm,
+        ):
 
             mock_mongo.save_receipt = AsyncMock(return_value="test_receipt_id")
             mock_elastic.index_receipt = AsyncMock()

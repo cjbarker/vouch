@@ -11,9 +11,10 @@ class TestSearchRouter:
     @pytest.fixture
     def mock_services(self, sample_receipt_data):
         """Mock required services."""
-        with patch("app.routers.search.mongodb_service") as mock_mongo, patch(
-            "app.routers.search.elasticsearch_service"
-        ) as mock_elastic:
+        with (
+            patch("app.routers.search.mongodb_service") as mock_mongo,
+            patch("app.routers.search.elasticsearch_service") as mock_elastic,
+        ):
 
             # Mock search results
             mock_elastic.search_receipts = AsyncMock(
