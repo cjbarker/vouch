@@ -1,6 +1,8 @@
 """Upload router for receipt file handling."""
 
+import asyncio
 import logging
+import uuid
 from pathlib import Path
 from typing import Optional
 
@@ -59,13 +61,15 @@ async def upload_receipt(file: UploadFile = File(...)):
             )
 
         # Save to temporary file
-        temp_file_path = (
-            settings.upload_dir / f"{Path(file.filename).stem}_{hash(content)}.{file_extension}"
-        )
+        temp_file_path = settings.upload_dir / f"{uuid.uuid4().hex}.{file_extension}"
 
         try:
-            with open(temp_file_path, "wb") as f:
-                f.write(content)
+
+            def _write_file():
+                with open(temp_file_path, "wb") as f:
+                    f.write(content)
+
+            await asyncio.to_thread(_write_file)
 
             # Analyze receipt with LLM service
             logger.info(f"Analyzing receipt: {file.filename}")
@@ -104,4 +108,4 @@ async def upload_receipt(file: UploadFile = File(...)):
         raise
     except Exception as e:
         logger.error(f"Upload failed: {e}", exc_info=True)
-        return UploadResponse(success=False, message="Failed to process receipt", error=str(e))
+        raise HTTPException(status_code=500, detail=f"Failed to process receipt: {str(e)}")

@@ -1,12 +1,17 @@
 """MongoDB service for receipt storage and retrieval."""
 
-from datetime import datetime
+import logging
+import re
+from datetime import UTC, datetime
 from typing import Dict, List, Optional
 
 from bson import ObjectId
+from bson.errors import InvalidId
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class MongoDBService:
@@ -54,8 +59,8 @@ class MongoDBService:
         # Add metadata
         document = {
             **receipt_data,
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow(),
+            "created_at": datetime.now(UTC),
+            "updated_at": datetime.now(UTC),
         }
 
         result = await self.collection.insert_one(document)
@@ -73,7 +78,8 @@ class MongoDBService:
         """
         try:
             obj_id = ObjectId(receipt_id)
-        except Exception:
+        except InvalidId:
+            logger.warning(f"Invalid ObjectId format: {receipt_id}")
             return None
 
         document = await self.collection.find_one({"_id": obj_id})
@@ -122,7 +128,8 @@ class MongoDBService:
         Returns:
             List of matching receipt documents
         """
-        query = {"transaction_info.store_name": {"$regex": store_name, "$options": "i"}}
+        escaped_name = re.escape(store_name)
+        query = {"transaction_info.store_name": {"$regex": escaped_name, "$options": "i"}}
 
         cursor = self.collection.find(query).sort("created_at", -1)
         receipts = []
@@ -166,6 +173,25 @@ class MongoDBService:
 
         return receipts
 
+    async def delete_receipt(self, receipt_id: str) -> bool:
+        """
+        Delete receipt from MongoDB.
+
+        Args:
+            receipt_id: MongoDB ObjectId as string
+
+        Returns:
+            True if deleted, False if not found
+        """
+        try:
+            obj_id = ObjectId(receipt_id)
+        except InvalidId:
+            logger.warning(f"Invalid ObjectId format for deletion: {receipt_id}")
+            return False
+
+        result = await self.collection.delete_one({"_id": obj_id})
+        return result.deleted_count > 0
+
     async def health_check(self) -> bool:
         """
         Check if MongoDB connection is healthy.
@@ -176,5 +202,6 @@ class MongoDBService:
         try:
             await self.client.admin.command("ping")
             return True
-        except Exception:
+        except Exception as e:
+            logger.warning(f"MongoDB health check failed: {e}")
             return False

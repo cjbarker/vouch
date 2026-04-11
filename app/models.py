@@ -1,6 +1,6 @@
 """Pydantic models for receipt data."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import List, Optional
 
 from pydantic import BaseModel, Field
@@ -80,10 +80,10 @@ class ReceiptDocument(Receipt):
 
     id: Optional[str] = Field(None, alias="_id", description="MongoDB document ID")
     created_at: datetime = Field(
-        default_factory=datetime.utcnow, description="Document creation timestamp"
+        default_factory=lambda: datetime.now(UTC), description="Document creation timestamp"
     )
     updated_at: datetime = Field(
-        default_factory=datetime.utcnow, description="Document update timestamp"
+        default_factory=lambda: datetime.now(UTC), description="Document update timestamp"
     )
 
     class Config:

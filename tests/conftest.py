@@ -19,7 +19,7 @@ def test_settings() -> Settings:
         elasticsearch_url="http://localhost:9200",
         llm_provider=LLMProvider.OLLAMA,
         ollama_api_url="http://localhost:11434",
-        ollama_model="llama3.2-vision",
+        ollama_model="llava",
         openai_api_key="test_key",
         openai_model="gpt-4-vision-preview",
         gemini_api_key="test_key",

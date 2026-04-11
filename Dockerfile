@@ -1,22 +1,25 @@
-# Multi-stage build for Python application
-FROM python:3.11-slim as builder
+# Multi-stage build for Python application using uv
+FROM python:3.11-slim AS builder
 
-# Install system dependencies
+# Install system dependencies and uv
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
     poppler-utils \
+    curl \
     && rm -rf /var/lib/apt/lists/*
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements first for better caching
+# Copy dependency files first for better caching
+COPY pyproject.toml .
 COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies (production only)
+RUN uv pip install --system --no-cache -r requirements.txt
 
 # Final stage
 FROM python:3.11-slim

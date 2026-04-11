@@ -1,5 +1,6 @@
 """Gemini service for receipt analysis using vision models."""
 
+import asyncio
 import base64
 import json
 from pathlib import Path
@@ -66,8 +67,9 @@ class GeminiService(BaseLLMService):
             # Create part with inline data
             image_part = types.Part.from_bytes(data=image_bytes, mime_type=mime_type)
 
-            # Call Gemini API
-            response = self.client.models.generate_content(
+            # Call Gemini API (synchronous SDK, run in thread to avoid blocking)
+            response = await asyncio.to_thread(
+                self.client.models.generate_content,
                 model=self.model_name,
                 contents=[self.prompt, image_part],
                 config=types.GenerateContentConfig(
@@ -115,7 +117,7 @@ class GeminiService(BaseLLMService):
         """
         try:
             # Test with a simple API call to list models
-            self.client.models.list()
+            await asyncio.to_thread(self.client.models.list)
             return True
         except Exception:
             return False

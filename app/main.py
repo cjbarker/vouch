@@ -5,7 +5,8 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
@@ -63,8 +64,14 @@ async def lifespan(app: FastAPI):
 
     # Shutdown
     logger.info("Shutting down Vouch application...")
-    await mongodb_service.disconnect()
-    await elasticsearch_service.disconnect()
+    try:
+        await mongodb_service.disconnect()
+    except Exception as e:
+        logger.error(f"Error disconnecting MongoDB: {e}", exc_info=True)
+    try:
+        await elasticsearch_service.disconnect()
+    except Exception as e:
+        logger.error(f"Error disconnecting Elasticsearch: {e}", exc_info=True)
     logger.info("All services disconnected")
 
 
@@ -74,6 +81,15 @@ app = FastAPI(
     description="Upload and analyze receipts with AI-powered extraction and search",
     version="0.1.0",
     lifespan=lifespan,
+)
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Setup templates
@@ -130,4 +146,5 @@ async def health_check():
     all_healthy = all(status == "healthy" for status in health_status["services"].values())
     health_status["status"] = "healthy" if all_healthy else "degraded"
 
-    return health_status
+    status_code = 200 if all_healthy else 503
+    return JSONResponse(content=health_status, status_code=status_code)

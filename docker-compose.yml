@@ -82,8 +82,8 @@ services:
       -c "
       echo 'Waiting for Ollama service to be ready...';
       sleep 5;
-      echo 'Pulling llava model... This may take several minutes.';
-      ollama pull llava;
+      echo 'Pulling ${OLLAMA_MODEL:-llava} model... This may take several minutes.';
+      ollama pull ${OLLAMA_MODEL:-llava};
       echo 'Model pulled successfully!';
       "
     environment:

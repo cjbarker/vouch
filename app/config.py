@@ -32,7 +32,7 @@ class Settings(BaseSettings):
 
     # Ollama Configuration
     ollama_api_url: str = "http://localhost:11434"
-    ollama_model: str = "llama3.2-vision"
+    ollama_model: str = "llava"
 
     # OpenAI Configuration
     openai_api_key: Optional[str] = None

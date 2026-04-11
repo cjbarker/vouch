@@ -1,6 +1,6 @@
 """Tests for OpenAI service."""
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import pytest
 
@@ -52,8 +52,14 @@ class TestOpenAIService:
         """Test handling rate limit error."""
         from openai import RateLimitError
 
+        mock_response = Mock()
+        mock_response.status_code = 429
+        mock_response.headers = {}
+        mock_response.request = Mock()
+        mock_response.request.url = "https://api.openai.com/v1/chat/completions"
+
         openai_service.client.chat.completions.create = AsyncMock(
-            side_effect=RateLimitError("Rate limit exceeded", response=None, body=None)
+            side_effect=RateLimitError("Rate limit exceeded", response=mock_response, body=None)
         )
 
         with pytest.raises(LLMRateLimitError):

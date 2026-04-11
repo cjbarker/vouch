@@ -40,13 +40,13 @@ class TestSettings:
         assert settings.elasticsearch_url == "http://localhost:9200"
         assert settings.llm_provider == LLMProvider.OLLAMA
         assert settings.ollama_api_url == "http://localhost:11434"
-        assert settings.ollama_model == "llama3.2-vision"
+        assert settings.ollama_model == "llava"
 
     def test_ollama_configuration(self):
         """Test Ollama configuration."""
         settings = Settings()
         assert settings.ollama_api_url == "http://localhost:11434"
-        assert settings.ollama_model == "llama3.2-vision"
+        assert settings.ollama_model == "llava"
 
     def test_openai_configuration(self):
         """Test OpenAI configuration."""

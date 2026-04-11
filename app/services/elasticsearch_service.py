@@ -1,10 +1,13 @@
 """Elasticsearch service for receipt search and indexing."""
 
+import logging
 from typing import Dict, Optional
 
 from elasticsearch import AsyncElasticsearch
 
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 class ElasticsearchService:
@@ -31,9 +34,9 @@ class ElasticsearchService:
             exists = await self.client.indices.exists(index=self.INDEX_NAME)
             if exists:
                 return
-        except Exception:
+        except Exception as e:
             # If check fails, try to create anyway and handle the error
-            pass
+            logger.warning(f"Failed to check if index exists, attempting creation: {e}")
 
         mapping = {
             "mappings": {
@@ -257,8 +260,8 @@ class ElasticsearchService:
         """
         try:
             await self.client.delete(index=self.INDEX_NAME, id=receipt_id)
-        except Exception:
-            pass  # Document might not exist
+        except Exception as e:
+            logger.warning(f"Failed to delete receipt {receipt_id} from index: {e}")
 
     async def health_check(self) -> bool:
         """
