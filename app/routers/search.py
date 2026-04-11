@@ -126,6 +126,32 @@ async def get_receipt(receipt_id: str):
         raise HTTPException(status_code=500, detail=f"Failed to retrieve receipt: {str(e)}")
 
 
+@router.delete("/receipts/{receipt_id}")
+async def delete_receipt_endpoint(receipt_id: str):
+    """
+    Delete a receipt by ID.
+
+    Removes the receipt from both MongoDB and Elasticsearch.
+    """
+    try:
+        deleted = await mongodb_service.delete_receipt(receipt_id)
+
+        if not deleted:
+            raise HTTPException(status_code=404, detail="Receipt not found")
+
+        # Also remove from Elasticsearch index
+        await elasticsearch_service.delete_receipt(receipt_id)
+        logger.info(f"Deleted receipt: {receipt_id}")
+
+        return {"success": True, "message": "Receipt deleted successfully"}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to delete receipt: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Failed to delete receipt: {str(e)}")
+
+
 @router.get("/receipts")
 async def list_receipts(
     skip: int = Query(0, ge=0, description="Number of results to skip"),

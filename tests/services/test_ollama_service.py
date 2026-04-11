@@ -26,7 +26,7 @@ class TestOllamaService:
     @pytest.mark.asyncio
     async def test_analyze_receipt_jpg(self, ollama_service, sample_image_path):
         """Test analyzing JPG receipt."""
-        mock_response = AsyncMock()
+        mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {
             "response": '{"transaction_info": {"store_name": "Test Store"}, "items": [], "totals": {"grand_total": 0.0}}'
@@ -56,7 +56,7 @@ class TestOllamaService:
     @pytest.mark.asyncio
     async def test_analyze_receipt_empty_response(self, ollama_service, sample_image_path):
         """Test handling empty response from Ollama."""
-        mock_response = AsyncMock()
+        mock_response = Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"response": ""}
         mock_response.raise_for_status = Mock()
@@ -74,9 +74,20 @@ class TestOllamaService:
     @pytest.mark.asyncio
     async def test_analyze_receipt_auth_error(self, ollama_service, sample_image_path):
         """Test handling authentication error."""
-        mock_response = AsyncMock()
+        import httpx
+
+        mock_request = Mock()
+        mock_request.url = "http://localhost:11434/api/generate"
+        mock_http_response = Mock()
+        mock_http_response.status_code = 401
+        mock_http_response.request = mock_request
+
+        mock_response = Mock()
         mock_response.status_code = 401
-        mock_response.raise_for_status.side_effect = Exception("401 Unauthorized")
+        mock_response.raise_for_status.side_effect = httpx.HTTPStatusError(
+            "401 Unauthorized", request=mock_request, response=mock_http_response
+        )
+        mock_http_response.status_code = 401
 
         with patch("httpx.AsyncClient") as mock_client_class:
             mock_client = AsyncMock()
@@ -91,7 +102,7 @@ class TestOllamaService:
     @pytest.mark.asyncio
     async def test_health_check_success(self, ollama_service):
         """Test successful health check."""
-        mock_response = AsyncMock()
+        mock_response = Mock()
         mock_response.status_code = 200
 
         with patch("httpx.AsyncClient") as mock_client_class:

@@ -1,9 +1,42 @@
 .PHONY: help build up down logs clean restart status health shell
+.PHONY: install-dev test lint format security-scan dev-server
 
 help: ## Show this help message
-	@echo "Vouch Docker Commands:"
+	@echo "Vouch Commands:"
 	@echo ""
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+# ============================================================================
+# Development Commands (uv)
+# ============================================================================
+
+install-dev: ## Install all dependencies (prod + dev) using uv
+	uv pip install -r requirements-dev.txt
+
+test: ## Run unit tests
+	pytest -m "not requires_services and not slow" --tb=short
+
+test-all: ## Run all tests including integration
+	pytest --tb=short
+
+lint: ## Run all linters (isort, black, flake8)
+	isort --check-only --diff app/ tests/
+	black --check app/ tests/
+	flake8 app/ tests/
+
+format: ## Auto-format code with isort and black
+	isort app/ tests/
+	black app/ tests/
+
+security-scan: ## Run bandit security scanner
+	bandit -r app/ -ll
+
+dev-server: ## Start development server with hot-reload
+	uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+# ============================================================================
+# Docker Commands
+# ============================================================================
 
 build: ## Build the Docker images
 	docker-compose build
@@ -37,16 +70,16 @@ health: ## Check health of all services
 	@echo "Checking service health..."
 	@echo ""
 	@echo "MongoDB:"
-	@curl -s http://localhost:27017 > /dev/null 2>&1 && echo "  ✓ Running" || echo "  ✗ Not accessible"
+	@curl -s http://localhost:27017 > /dev/null 2>&1 && echo "  Running" || echo "  Not accessible"
 	@echo ""
 	@echo "Elasticsearch:"
-	@curl -s http://localhost:9200/_cluster/health | grep -q "status" && echo "  ✓ Running" || echo "  ✗ Not accessible"
+	@curl -s http://localhost:9200/_cluster/health | grep -q "status" && echo "  Running" || echo "  Not accessible"
 	@echo ""
 	@echo "Ollama:"
-	@curl -s http://localhost:11434/api/tags > /dev/null 2>&1 && echo "  ✓ Running" || echo "  ✗ Not accessible"
+	@curl -s http://localhost:11434/api/tags > /dev/null 2>&1 && echo "  Running" || echo "  Not accessible"
 	@echo ""
 	@echo "Vouch Application:"
-	@curl -s http://localhost:8000/health | grep -q "status" && echo "  ✓ Running" || echo "  ✗ Not accessible"
+	@curl -s http://localhost:8000/health | grep -q "status" && echo "  Running" || echo "  Not accessible"
 	@echo ""
 
 restart: ## Restart all services
