@@ -15,20 +15,18 @@ class TestSearchRouter:
             patch("app.routers.search.mongodb_service") as mock_mongo,
             patch("app.routers.search.elasticsearch_service") as mock_elastic,
         ):
-
-            # Mock search results
-            mock_elastic.search_receipts = AsyncMock(
+            # Mock search results (matches ElasticsearchService.search() return format)
+            mock_elastic.search = AsyncMock(
                 return_value={
-                    "hits": {
-                        "total": {"value": 1},
-                        "hits": [
-                            {
-                                "_id": "test_id",
-                                "_score": 1.0,
-                                "_source": sample_receipt_data,
-                            }
-                        ],
-                    }
+                    "total": 1,
+                    "results": [
+                        {
+                            "receipt_id": "test_id",
+                            "score": 1.0,
+                            "receipt": sample_receipt_data,
+                            "highlights": {},
+                        }
+                    ],
                 }
             )
 
@@ -37,7 +35,7 @@ class TestSearchRouter:
             mock_mongo.get_receipt = AsyncMock(return_value=receipt_with_id)
 
             # Mock list receipts
-            mock_mongo.list_receipts = AsyncMock(return_value=[receipt_with_id])
+            mock_mongo.get_all_receipts = AsyncMock(return_value=[receipt_with_id])
             mock_mongo.count_receipts = AsyncMock(return_value=1)
 
             yield {
@@ -62,13 +60,14 @@ class TestSearchRouter:
         response = test_client.get("/api/search?q=Store&store_name=Test&min_price=10&max_price=100")
 
         assert response.status_code == 200
-        mock_services["elastic"].search_receipts.assert_called_once()
+        mock_services["elastic"].search.assert_called_once()
 
     @pytest.mark.integration
     def test_search_empty_results(self, test_client, mock_services):
         """Test search with no results."""
-        mock_services["elastic"].search_receipts.return_value = {
-            "hits": {"total": {"value": 0}, "hits": []}
+        mock_services["elastic"].search.return_value = {
+            "total": 0,
+            "results": [],
         }
 
         response = test_client.get("/api/search?q=NonexistentStore")
@@ -104,7 +103,7 @@ class TestSearchRouter:
         assert response.status_code == 200
         data = response.json()
         assert data["total"] == 1
-        assert len(data["results"]) == 1
+        assert len(data["receipts"]) == 1
 
     @pytest.mark.integration
     def test_list_receipts_pagination(self, test_client, mock_services):
@@ -112,7 +111,7 @@ class TestSearchRouter:
         response = test_client.get("/api/receipts?skip=10&limit=5")
 
         assert response.status_code == 200
-        mock_services["mongo"].list_receipts.assert_called_once()
-        call_args = mock_services["mongo"].list_receipts.call_args
+        mock_services["mongo"].get_all_receipts.assert_called_once()
+        call_args = mock_services["mongo"].get_all_receipts.call_args
         assert call_args[1]["skip"] == 10
         assert call_args[1]["limit"] == 5

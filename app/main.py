@@ -34,13 +34,16 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting up Vouch application...")
 
+    # Connect to MongoDB
     try:
-        # Connect to MongoDB
         logger.info("Connecting to MongoDB...")
         await mongodb_service.connect()
         logger.info("MongoDB connected successfully")
+    except Exception as e:
+        logger.warning(f"MongoDB unavailable, some features will be degraded: {e}")
 
-        # Connect to Elasticsearch
+    # Connect to Elasticsearch
+    try:
         logger.info("Connecting to Elasticsearch...")
         await elasticsearch_service.connect()
         logger.info("Elasticsearch connected successfully")
@@ -49,16 +52,14 @@ async def lifespan(app: FastAPI):
         logger.info("Creating Elasticsearch index...")
         await elasticsearch_service.create_index()
         logger.info("Elasticsearch index ready")
-
-        # Set services in routers
-        upload.set_services(mongodb_service, elasticsearch_service, llm_service)
-        search.set_services(mongodb_service, elasticsearch_service)
-
-        logger.info("All services initialized successfully")
-
     except Exception as e:
-        logger.error(f"Failed to initialize services: {e}", exc_info=True)
-        raise
+        logger.warning(f"Elasticsearch unavailable, search will be degraded: {e}")
+
+    # Set services in routers
+    upload.set_services(mongodb_service, elasticsearch_service, llm_service)
+    search.set_services(mongodb_service, elasticsearch_service)
+
+    logger.info("Application started (some services may be degraded)")
 
     yield
 

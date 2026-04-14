@@ -18,11 +18,13 @@ class LLMServiceFactory:
             from app.services.gemini_service import GeminiService
             from app.services.ollama_service import OllamaService
             from app.services.openai_service import OpenAIService
+            from app.services.openapi_service import OpenAPIService
 
             cls._providers = {
                 LLMProvider.OLLAMA: OllamaService,
                 LLMProvider.OPENAI: OpenAIService,
                 LLMProvider.GEMINI: GeminiService,
+                LLMProvider.OPENAPI: OpenAPIService,
             }
 
     @classmethod

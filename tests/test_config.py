@@ -20,13 +20,18 @@ class TestLLMProvider:
         """Test Gemini provider enum value."""
         assert LLMProvider.GEMINI.value == "gemini"
 
+    def test_openapi_provider(self):
+        """Test OpenAPI provider enum value."""
+        assert LLMProvider.OPENAPI.value == "openapi"
+
     def test_all_providers(self):
         """Test all provider values."""
         providers = list(LLMProvider)
-        assert len(providers) == 3
+        assert len(providers) == 4
         assert LLMProvider.OLLAMA in providers
         assert LLMProvider.OPENAI in providers
         assert LLMProvider.GEMINI in providers
+        assert LLMProvider.OPENAPI in providers
 
 
 class TestSettings:

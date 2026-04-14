@@ -3,7 +3,7 @@
 from datetime import UTC, datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class WarrantyDetails(BaseModel):
@@ -86,8 +86,7 @@ class ReceiptDocument(Receipt):
         default_factory=lambda: datetime.now(UTC), description="Document update timestamp"
     )
 
-    class Config:
-        populate_by_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
 class UploadResponse(BaseModel):

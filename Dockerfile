@@ -15,11 +15,10 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 WORKDIR /app
 
 # Copy dependency files first for better caching
-COPY pyproject.toml .
-COPY requirements.txt .
+COPY pyproject.toml uv.lock ./
 
 # Install Python dependencies (production only)
-RUN uv pip install --system --no-cache -r requirements.txt
+RUN uv pip install --system --no-cache .
 
 # Final stage
 FROM python:3.11-slim

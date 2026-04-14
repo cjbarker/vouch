@@ -84,7 +84,7 @@ Once all services are healthy:
 - [uv](https://docs.astral.sh/uv/) package manager (recommended)
 - MongoDB 7.0+
 - Elasticsearch 8.12+
-- An LLM provider (Ollama, OpenAI, or Gemini)
+- An LLM provider (Ollama, OpenAI, Gemini, or any OpenAI-compatible endpoint)
 - poppler-utils (for PDF processing)
 
 ### Install Dependencies
@@ -94,10 +94,7 @@ Once all services are healthy:
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Install all dependencies (production + development)
-uv pip install -r requirements-dev.txt
-
-# Or install production dependencies only
-uv pip install -r requirements.txt
+uv sync --extra dev
 ```
 
 ### Configure Environment
@@ -114,7 +111,7 @@ cp .env.example .env
 make dev-server
 
 # Or directly
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ---
@@ -127,10 +124,10 @@ All commands use `make` for convenience. Run `make help` to see all available co
 
 | Command | Description |
 |---------|-------------|
-| `make install-dev` | Install all dependencies (prod + dev) using uv |
+| `make install-dev` | Install all dependencies using uv |
 | `make dev-server` | Start development server with hot-reload |
-| `make format` | Auto-format code with isort and black |
-| `make lint` | Run all linters (isort, black, flake8) |
+| `make format` | Auto-format code with ruff |
+| `make lint` | Run linter and format check (ruff) |
 | `make security-scan` | Run bandit security scanner |
 
 ### Testing
@@ -139,10 +136,9 @@ All commands use `make` for convenience. Run `make help` to see all available co
 |---------|-------------|
 | `make test` | Run unit tests (excludes integration/slow tests) |
 | `make test-all` | Run all tests including integration tests |
-| `pytest -m unit` | Run only unit-marked tests |
-| `pytest -x` | Stop on first failure |
-| `pytest --lf` | Re-run last failed tests |
-| `pytest --durations=10` | Show 10 slowest tests |
+| `uv run pytest -m unit` | Run only unit-marked tests |
+| `uv run pytest -x` | Stop on first failure |
+| `uv run pytest --lf` | Re-run last failed tests |
 
 ### Docker / Deploy
 
@@ -164,13 +160,14 @@ All commands use `make` for convenience. Run `make help` to see all available co
 
 ## LLM Providers
 
-Vouch supports three LLM providers for receipt analysis:
+Vouch supports four LLM providers for receipt analysis:
 
 | Provider | Cost | Privacy | Setup | API Key | Best For |
 |----------|------|---------|-------|---------|----------|
 | **Ollama** | Free | High (local) | Medium | No | Privacy, self-hosting, development |
 | **OpenAI** | ~$0.01-0.03/receipt | Low (cloud) | Easy | Yes | Production, accuracy, speed |
 | **Gemini** | Free tier + paid | Low (cloud) | Easy | Yes | Cost optimization, free tier |
+| **OpenAPI** | Varies | Varies | Easy | Yes | Custom/self-hosted LLMs, any OpenAI-compatible API |
 
 ### Quick Provider Setup
 
@@ -190,6 +187,14 @@ OPENAI_API_KEY=sk-your-key-here
 ```
 LLM_PROVIDER=gemini
 GEMINI_API_KEY=your-key-here
+```
+
+**OpenAPI-compatible endpoint (vLLM, LiteLLM, Together AI, etc.):** Add to `.env`:
+```
+LLM_PROVIDER=openapi
+OPENAPI_API_URL=https://your-llm-host.com/v1
+OPENAPI_API_KEY=your-api-key
+OPENAPI_MODEL=your-model-name
 ```
 
 For detailed setup instructions, see [PROVIDER_SETUP_GUIDE.md](PROVIDER_SETUP_GUIDE.md).

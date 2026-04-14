@@ -24,6 +24,9 @@ def test_settings() -> Settings:
         openai_model="gpt-4-vision-preview",
         gemini_api_key="test_key",
         gemini_model="gemini-1.5-pro-vision",
+        openapi_api_url="http://localhost:8080/v1",
+        openapi_api_key="test_key",
+        openapi_model="test-model",
         upload_dir=Path("/tmp/test_uploads"),
         max_upload_size=5242880,
         allowed_extensions="jpg,jpeg,png,pdf",
@@ -172,12 +175,26 @@ def mock_elasticsearch_client() -> AsyncMock:
 
 @pytest.fixture
 def test_client() -> Generator[TestClient, None, None]:
-    """Create FastAPI test client."""
+    """Create FastAPI test client with mocked service connections."""
     # Import here to avoid circular imports
     from app.main import app
 
-    with TestClient(app) as client:
-        yield client
+    with (
+        patch("app.main.mongodb_service") as mock_mongo,
+        patch("app.main.elasticsearch_service") as mock_es,
+        patch("app.main.llm_service") as mock_llm,
+    ):
+        mock_mongo.connect = AsyncMock()
+        mock_mongo.disconnect = AsyncMock()
+        mock_mongo.health_check = AsyncMock(return_value=True)
+        mock_es.connect = AsyncMock()
+        mock_es.disconnect = AsyncMock()
+        mock_es.create_index = AsyncMock()
+        mock_es.health_check = AsyncMock(return_value=True)
+        mock_llm.health_check = AsyncMock(return_value=True)
+
+        with TestClient(app) as client:
+            yield client
 
 
 @pytest.fixture

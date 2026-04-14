@@ -11,28 +11,27 @@ help: ## Show this help message
 # ============================================================================
 
 install-dev: ## Install all dependencies (prod + dev) using uv
-	uv pip install -r requirements-dev.txt
+	uv sync --extra dev
 
 test: ## Run unit tests
-	pytest -m "not requires_services and not slow" --tb=short
+	uv run pytest -m "not requires_services and not slow" --tb=short
 
 test-all: ## Run all tests including integration
-	pytest --tb=short
+	uv run pytest --tb=short
 
-lint: ## Run all linters (isort, black, flake8)
-	isort --check-only --diff app/ tests/
-	black --check app/ tests/
-	flake8 app/ tests/
+lint: ## Run linter and format check (ruff)
+	uv run ruff check app/ tests/
+	uv run ruff format --check app/ tests/
 
-format: ## Auto-format code with isort and black
-	isort app/ tests/
-	black app/ tests/
+format: ## Auto-format code with ruff
+	uv run ruff format app/ tests/
+	uv run ruff check --fix app/ tests/
 
 security-scan: ## Run bandit security scanner
-	bandit -r app/ -ll
+	uv run bandit -r app/ -ll
 
 dev-server: ## Start development server with hot-reload
-	uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+	uv run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 # ============================================================================
 # Docker Commands

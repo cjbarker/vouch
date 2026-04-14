@@ -13,6 +13,7 @@ class LLMProvider(str, Enum):
     OLLAMA = "ollama"
     OPENAI = "openai"
     GEMINI = "gemini"
+    OPENAPI = "openapi"
 
 
 class Settings(BaseSettings):
@@ -44,6 +45,13 @@ class Settings(BaseSettings):
     gemini_api_key: Optional[str] = None
     gemini_model: str = "gemini-1.5-pro-vision"
     gemini_temperature: float = 0.0
+
+    # OpenAPI-compatible endpoint Configuration
+    openapi_api_url: Optional[str] = None
+    openapi_api_key: Optional[str] = None
+    openapi_model: str = "default"
+    openapi_max_tokens: int = 4096
+    openapi_temperature: float = 0.0
 
     # File Upload Configuration
     max_upload_size: int = 5242880  # 5MB in bytes

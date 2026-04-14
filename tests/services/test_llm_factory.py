@@ -5,11 +5,12 @@ from unittest.mock import patch
 import pytest
 
 from app.config import LLMProvider
-from app.services.base_llm_service import LLMAuthenticationError
+from app.services.base_llm_service import LLMAPIError, LLMAuthenticationError
 from app.services.gemini_service import GeminiService
 from app.services.llm_factory import LLMServiceFactory
 from app.services.ollama_service import OllamaService
 from app.services.openai_service import OpenAIService
+from app.services.openapi_service import OpenAPIService
 
 
 class TestLLMServiceFactory:
@@ -77,12 +78,51 @@ class TestLLMServiceFactory:
             with pytest.raises(LLMAuthenticationError, match="GEMINI_API_KEY"):
                 LLMServiceFactory.create()
 
+    def test_create_openapi_service(self, mock_settings):
+        """Test creating OpenAPI-compatible service."""
+        mock_settings.llm_provider = LLMProvider.OPENAPI
+        mock_settings.openapi_api_url = "http://localhost:8080/v1"
+        mock_settings.openapi_api_key = "test_key"
+        mock_settings.openapi_model = "test-model"
+        with (
+            patch("app.services.llm_factory.settings", mock_settings),
+            patch("app.services.openapi_service.settings", mock_settings),
+        ):
+            service = LLMServiceFactory.create()
+            assert isinstance(service, OpenAPIService)
+            assert service.model == "test-model"
+
+    def test_create_openapi_without_api_url(self, mock_settings):
+        """Test creating OpenAPI service without API URL."""
+        mock_settings.llm_provider = LLMProvider.OPENAPI
+        mock_settings.openapi_api_url = None
+        mock_settings.openapi_api_key = "test_key"
+        with (
+            patch("app.services.llm_factory.settings", mock_settings),
+            patch("app.services.openapi_service.settings", mock_settings),
+        ):
+            with pytest.raises(LLMAPIError, match="OPENAPI_API_URL"):
+                LLMServiceFactory.create()
+
+    def test_create_openapi_without_api_key(self, mock_settings):
+        """Test creating OpenAPI service without API key."""
+        mock_settings.llm_provider = LLMProvider.OPENAPI
+        mock_settings.openapi_api_url = "http://localhost:8080/v1"
+        mock_settings.openapi_api_key = None
+        with (
+            patch("app.services.llm_factory.settings", mock_settings),
+            patch("app.services.openapi_service.settings", mock_settings),
+        ):
+            with pytest.raises(LLMAuthenticationError, match="OPENAPI_API_KEY"):
+                LLMServiceFactory.create()
+
     def test_factory_initializes_providers(self):
         """Test that factory initializes provider mapping."""
         # Trigger initialization
         LLMServiceFactory._providers = {}  # Reset
         LLMServiceFactory._initialize_providers()
-        assert len(LLMServiceFactory._providers) == 3
+        assert len(LLMServiceFactory._providers) == 4
         assert LLMProvider.OLLAMA in LLMServiceFactory._providers
         assert LLMProvider.OPENAI in LLMServiceFactory._providers
         assert LLMProvider.GEMINI in LLMServiceFactory._providers
+        assert LLMProvider.OPENAPI in LLMServiceFactory._providers

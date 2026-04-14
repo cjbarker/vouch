@@ -21,19 +21,16 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: uv pip install --system -r requirements-dev.txt
+        run: uv sync --extra dev
 
-      - name: Run isort check
-        run: isort --check-only --diff app/ tests/
+      - name: Run ruff lint
+        run: uv run ruff check app/ tests/
 
-      - name: Run black check
-        run: black --check app/ tests/
-
-      - name: Run flake8
-        run: flake8 app/ tests/
+      - name: Run ruff format check
+        run: uv run ruff format --check app/ tests/
 
       - name: Run bandit security scan
-        run: bandit -r app/ -ll
+        run: uv run bandit -r app/ -ll
 
   test:
     runs-on: ubuntu-latest
@@ -50,10 +47,10 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: uv pip install --system -r requirements-dev.txt
+        run: uv sync --extra dev
 
       - name: Run tests
-        run: pytest -m "not requires_services and not slow" --tb=short
+        run: uv run pytest -m "not requires_services and not slow" --tb=short
 
   docker-build:
     runs-on: ubuntu-latest

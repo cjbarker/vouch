@@ -18,7 +18,6 @@ class TestUploadRouter:
             patch("app.routers.upload.elasticsearch_service") as mock_elastic,
             patch("app.routers.upload.llm_service") as mock_llm,
         ):
-
             mock_mongo.save_receipt = AsyncMock(return_value="test_receipt_id")
             mock_elastic.index_receipt = AsyncMock()
             mock_llm.analyze_receipt = AsyncMock(return_value=sample_receipt_data)
@@ -85,8 +84,7 @@ class TestUploadRouter:
             "/api/upload", files={"file": ("receipt.jpg", img_data, "image/jpeg")}
         )
 
-        # Should return 200 with success=False
-        assert response.status_code == 200
+        # Should return 500 when analysis fails
+        assert response.status_code == 500
         data = response.json()
-        assert data["success"] is False
-        assert "error" in data
+        assert "Failed to process receipt" in data["detail"]

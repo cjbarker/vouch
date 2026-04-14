@@ -2,7 +2,7 @@
 
 ## Quick Start
 
-The Vouch application now supports three LLM providers for receipt analysis. Choose the one that best fits your needs.
+The Vouch application now supports four LLM providers for receipt analysis. Choose the one that best fits your needs.
 
 ## Provider Comparison
 
@@ -11,6 +11,7 @@ The Vouch application now supports three LLM providers for receipt analysis. Cho
 | **Ollama** | Free (self-hosted) | High (local) | Medium | No |
 | **OpenAI** | Pay-per-use | Low (cloud) | Easy | Yes |
 | **Gemini** | Free tier + paid | Low (cloud) | Easy | Yes |
+| **OpenAPI** | Varies | Varies | Easy | Yes |
 
 ## Setup Instructions
 
@@ -95,6 +96,30 @@ The Vouch application now supports three LLM providers for receipt analysis. Cho
 
 **Cost:** Free tier: 15 RPM, 1500 RPD. Paid: varies.
 
+### Option 4: OpenAPI-compatible Endpoint (Any OpenAI-compatible API)
+
+**Pros:** Works with any OpenAI-compatible LLM (vLLM, LiteLLM, Together AI, Anyscale, etc.), flexible
+**Cons:** Requires an accessible endpoint, varies by provider
+
+1. Ensure your LLM endpoint is running and exposes an OpenAI-compatible chat completions API
+
+2. Configure `.env`:
+   ```bash
+   LLM_PROVIDER=openapi
+   OPENAPI_API_URL=https://your-llm-host.com/v1
+   OPENAPI_API_KEY=your-api-key-here
+   OPENAPI_MODEL=your-model-name
+   OPENAPI_MAX_TOKENS=4096
+   OPENAPI_TEMPERATURE=0.0
+   ```
+
+3. Start the app:
+   ```bash
+   python -m uvicorn app.main:app --reload
+   ```
+
+**Note:** The `OPENAPI_API_URL` should be the base URL of the API. The SDK appends `/chat/completions` automatically. For example, if your completions endpoint is at `http://host:8000/v1/chat/completions`, set the URL to `http://host:8000/v1`.
+
 ## Switching Providers
 
 You can switch providers at any time by changing the `LLM_PROVIDER` environment variable and restarting the application.
@@ -102,7 +127,7 @@ You can switch providers at any time by changing the `LLM_PROVIDER` environment 
 ### Method 1: Edit `.env` file
 ```bash
 # Change this line in .env
-LLM_PROVIDER=openai  # or ollama, or gemini
+LLM_PROVIDER=openai  # or ollama, gemini, or openapi
 ```
 
 ### Method 2: Environment variable
@@ -154,6 +179,12 @@ curl -X POST "http://localhost:8000/api/upload" \
 ### Error: "GEMINI_API_KEY is required"
 - **Solution:** Add `GEMINI_API_KEY=...` to your `.env` file
 
+### Error: "OPENAPI_API_URL is required"
+- **Solution:** Add `OPENAPI_API_URL=https://your-host/v1` to your `.env` file
+
+### Error: "OPENAPI_API_KEY is required"
+- **Solution:** Add `OPENAPI_API_KEY=...` to your `.env` file
+
 ### Error: "Failed to connect to Ollama"
 - **Solution:** Make sure Ollama is running: `ollama serve`
 - **Check:** Verify URL in `.env` matches Ollama server
@@ -162,6 +193,7 @@ curl -X POST "http://localhost:8000/api/upload" \
 - **Ollama:** Check if `ollama serve` is running
 - **OpenAI:** Verify API key is valid
 - **Gemini:** Verify API key is valid
+- **OpenAPI:** Verify the URL is reachable and the API key is valid
 
 ### Receipt analysis returns errors
 - **Check logs:** Look for specific error messages
@@ -197,7 +229,7 @@ curl -X POST "http://localhost:8000/api/upload" \
 
 ```bash
 # Provider Selection
-LLM_PROVIDER=ollama|openai|gemini
+LLM_PROVIDER=ollama|openai|gemini|openapi
 
 # Ollama Configuration
 OLLAMA_API_URL=http://localhost:11434
@@ -213,6 +245,13 @@ OPENAI_TEMPERATURE=0.0
 GEMINI_API_KEY=...
 GEMINI_MODEL=gemini-1.5-pro-vision
 GEMINI_TEMPERATURE=0.0
+
+# OpenAPI-compatible Endpoint Configuration
+OPENAPI_API_URL=https://your-llm-host.com/v1
+OPENAPI_API_KEY=your-api-key
+OPENAPI_MODEL=your-model-name
+OPENAPI_MAX_TOKENS=4096
+OPENAPI_TEMPERATURE=0.0
 ```
 
 ## Next Steps
